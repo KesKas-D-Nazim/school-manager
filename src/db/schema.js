@@ -4,6 +4,7 @@ export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
+  password: text("password"),
   age: integer("age"),
   telNumber: text("tel_number"),
   role: text("role", { enum: ["student", "teacher", "owner"] }).notNull(),
