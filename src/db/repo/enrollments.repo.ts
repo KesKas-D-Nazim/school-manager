@@ -12,17 +12,19 @@ export async function createEnrollment(data: NewEnrollment): Promise<Enrollment>
 export async function findEnrollmentById(
   id: number,
 ): Promise<Enrollment | undefined> {
-  const [row] = await db.select().from(enrollments).where(eq(enrollments.id, id));
-  return row;
+  return db.query.enrollments.findFirst({
+    where: eq(enrollments.id, id),
+  });
 }
 
 export async function findEnrollmentByStudentAndCourse(
   studentId: number,
   courseId: number,
 ): Promise<Enrollment | undefined> {
-  const [row] = await db
-    .select()
-    .from(enrollments)
-    .where(and(eq(enrollments.studentId, studentId), eq(enrollments.courseId, courseId)));
-  return row;
+  return db.query.enrollments.findFirst({
+    where: and(
+      eq(enrollments.studentId, studentId),
+      eq(enrollments.courseId, courseId),
+    ),
+  });
 }

@@ -10,13 +10,15 @@ export async function createStudent(data: NewStudent): Promise<Student> {
 }
 
 export async function findStudentById(id: number): Promise<Student | undefined> {
-  const [row] = await db.select().from(students).where(eq(students.id, id));
-  return row;
+  return db.query.students.findFirst({
+    where: eq(students.id, id),
+  });
 }
 
 export async function findStudentByUserId(
   userId: number,
 ): Promise<Student | undefined> {
-  const [row] = await db.select().from(students).where(eq(students.userId, userId));
-  return row;
+  return db.query.students.findFirst({
+    where: eq(students.userId, userId),
+  });
 }

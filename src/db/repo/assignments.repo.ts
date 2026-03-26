@@ -12,12 +12,15 @@ export async function createAssignment(data: NewAssignment): Promise<Assignment>
 export async function findAssignmentById(
   id: number,
 ): Promise<Assignment | undefined> {
-  const [row] = await db.select().from(assignments).where(eq(assignments.id, id));
-  return row;
+  return db.query.assignments.findFirst({
+    where: eq(assignments.id, id),
+  });
 }
 
 export async function listAssignmentsByCourseId(
   courseId: number,
 ): Promise<Assignment[]> {
-  return db.select().from(assignments).where(eq(assignments.courseId, courseId));
+  return db.query.assignments.findMany({
+    where: eq(assignments.courseId, courseId),
+  });
 }

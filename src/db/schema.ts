@@ -139,6 +139,12 @@ export const files = sqliteTable("files", {
   uploadedAt: text("uploaded_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
+export const filesRelations = relations(files, ({ many }) => ({
+  courseFiles: many(courseFiles),
+  assignmentFiles: many(assignmentFiles),
+  notificationFiles: many(notificationFiles),
+}));
+
 export const events = sqliteTable("events", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   courseId: integer("course_id").references(() => courses.id, {

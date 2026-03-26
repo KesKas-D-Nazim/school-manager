@@ -10,11 +10,13 @@ export async function createFile(data: NewFile): Promise<File> {
 }
 
 export async function findFileById(id: number): Promise<File | undefined> {
-  const [row] = await db.select().from(files).where(eq(files.id, id));
-  return row;
+  return db.query.files.findFirst({
+    where: eq(files.id, id),
+  });
 }
 
 export async function findFileByKey(key: string): Promise<File | undefined> {
-  const [row] = await db.select().from(files).where(eq(files.key, key));
-  return row;
+  return db.query.files.findFirst({
+    where: eq(files.key, key),
+  });
 }

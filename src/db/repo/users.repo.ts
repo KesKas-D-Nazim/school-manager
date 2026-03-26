@@ -9,18 +9,21 @@ export async function createUser(data: NewUser): Promise<User> {
 }
 
 export async function findUserById(id: number): Promise<User | undefined> {
-  const [row] = await db.select().from(users).where(eq(users.id, id));
-  return row;
+  return db.query.users.findFirst({
+    where: eq(users.id, id),
+  });
 }
 
 export async function findUserByEmail(email: string): Promise<User | undefined> {
-  const [row] = await db.select().from(users).where(eq(users.email, email));
-  return row;
+  return db.query.users.findFirst({
+    where: eq(users.email, email),
+  });
 }
 
 export async function findUserByUsername(
   username: string,
 ): Promise<User | undefined> {
-  const [row] = await db.select().from(users).where(eq(users.username, username));
-  return row;
+  return db.query.users.findFirst({
+    where: eq(users.username, username),
+  });
 }

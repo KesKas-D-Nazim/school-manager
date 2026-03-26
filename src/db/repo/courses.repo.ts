@@ -10,12 +10,15 @@ export async function createCourse(data: NewCourse): Promise<Course> {
 }
 
 export async function findCourseById(id: number): Promise<Course | undefined> {
-  const [row] = await db.select().from(courses).where(eq(courses.id, id));
-  return row;
+  return db.query.courses.findFirst({
+    where: eq(courses.id, id),
+  });
 }
 
 export async function listCoursesByTeacherId(
   teacherId: number,
 ): Promise<Course[]> {
-  return db.select().from(courses).where(eq(courses.teacherId, teacherId));
+  return db.query.courses.findMany({
+    where: eq(courses.teacherId, teacherId),
+  });
 }

@@ -14,12 +14,15 @@ export async function createNotification(
 export async function findNotificationById(
   id: number,
 ): Promise<Notification | undefined> {
-  const [row] = await db.select().from(notifications).where(eq(notifications.id, id));
-  return row;
+  return db.query.notifications.findFirst({
+    where: eq(notifications.id, id),
+  });
 }
 
 export async function listNotificationsByUserId(
   userId: number,
 ): Promise<Notification[]> {
-  return db.select().from(notifications).where(eq(notifications.usersId, userId));
+  return db.query.notifications.findMany({
+    where: eq(notifications.usersId, userId),
+  });
 }
