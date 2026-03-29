@@ -6,4 +6,5 @@ export * from "./enrollments.repo.js";
 export * from "./references.repo.js";
 export * from "./assignments.repo.js";
 export * from "./files.repo.js";
+export * from "./events.repo.js";
 export * from "./notifications.repo.js";

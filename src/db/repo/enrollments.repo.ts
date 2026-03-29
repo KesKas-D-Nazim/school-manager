@@ -28,3 +28,15 @@ export async function findEnrollmentByStudentAndCourse(
     ),
   });
 }
+
+export async function listEnrollmentsByStudentId(
+  studentId: number,
+): Promise<Enrollment[]> {
+  return db.query.enrollments.findMany({
+    where: eq(enrollments.studentId, studentId),
+  });
+}
+
+export async function deleteEnrollment(id: number): Promise<void> {
+  await db.delete(enrollments).where(eq(enrollments.id, id));
+}

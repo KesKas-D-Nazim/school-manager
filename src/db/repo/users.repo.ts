@@ -27,3 +27,19 @@ export async function findUserByUsername(
     where: eq(users.username, username),
   });
 }
+
+export async function updateUser(
+  id: number,
+  data: Partial<NewUser>,
+): Promise<User | undefined> {
+  const [row] = await db
+    .update(users)
+    .set(data)
+    .where(eq(users.id, id))
+    .returning();
+  return row;
+}
+
+export async function deleteUser(id: number): Promise<void> {
+  await db.delete(users).where(eq(users.id, id));
+}
