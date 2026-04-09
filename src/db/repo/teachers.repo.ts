@@ -1,7 +1,7 @@
 import { eq, inArray, like, sql } from "drizzle-orm";
 
 import { db } from "../db.js";
-import { teachersTable, usersTable } from "../schema.js";
+import { teachersTable, users } from "../schema.js";
 import type { NewTeacher, Teacher } from "../../types.js";
 
 export async function createTeacher(data: NewTeacher): Promise<Teacher> {
@@ -42,9 +42,9 @@ export async function listTeachers(
     ? inArray(
       teachersTable.userId,
       db
-        .select({ id: usersTable.id })
-        .from(usersTable)
-        .where(like(usersTable.username, `%${searchValue}%`)),
+        .select({ id: users.id })
+        .from(users)
+        .where(like(users.username, `%${searchValue}%`)),
     )
     : undefined;
 

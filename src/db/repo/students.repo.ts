@@ -1,5 +1,5 @@
 import { db } from "../db.ts";
-import { studentsTable, usersTable } from "../schema.ts";
+import { studentsTable, users } from "../schema.ts";
 import type { NewStudent, Student } from "../../types.ts";
 import { eq, inArray, like, sql } from "drizzle-orm";
 
@@ -41,9 +41,9 @@ export async function listStudents(
     ? inArray(
       studentsTable.userId,
       db
-        .select({ id: usersTable.id })
-        .from(usersTable)
-        .where(like(usersTable.username, `%${searchValue}%`)),
+        .select({ id: users.id })
+        .from(users)
+        .where(like(users.username, `%${searchValue}%`)),
     )
     : undefined;
 

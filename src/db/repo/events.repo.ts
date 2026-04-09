@@ -25,11 +25,11 @@ export async function listEvents(filters: {
   const conditions: SQL[] = [];
 
   if (filters.startDate) {
-    conditions.push(gte(eventsTable.date, filters.startDate));
+    conditions.push(gte(eventsTable.date, new Date(filters.startDate)));
   }
 
   if (filters.endDate) {
-    conditions.push(lte(eventsTable.date, filters.endDate));
+    conditions.push(lte(eventsTable.date, new Date(filters.endDate)));
   }
 
   if (filters.className) {
