@@ -3,20 +3,15 @@ import { Hono } from "hono";
 import { adminRouter } from "./routes/admin/admin.router.ts";
 import { cors } from 'hono/cors'
 import "dotenv/config";
+import authRouter from "./routes/auth/auth.router.ts";
 
 const app = new Hono();
 
-app.use('/*', cors())
+app.use('*', cors())
 
-app.get("/", (c) => {
-  return c.text("Hello Hono!");
-});
+app.route("/auth",authRouter);
 
 app.route("/admin", adminRouter);
-
-app.get("/*", (c) => {
-  return c.json("hello");
-});
 
 app.notFound((c) => {
   return c.json({ message: "Not Found" }, 404)

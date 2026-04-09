@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import { studentSearchSchema, teacherSearchSchema } from "../../types.ts"
 import { zValidator } from "@hono/zod-validator"
-import { adminController } from "./Admin.controller.ts"
+import { adminController } from "./admin.controller.ts"
 
 
 export const adminRouter = new Hono()

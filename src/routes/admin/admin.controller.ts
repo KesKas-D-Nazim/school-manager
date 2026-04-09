@@ -1,9 +1,6 @@
 import { listTeachers } from "../../db/repo/index.ts";
 import { listStudents } from "../../db/repo/students.repo.ts";
 
-// export const AdminController = async () => {
-
-// }
 
 class AdminController {
     async listStudents(search?: string, page = 1, size = 10) {
