@@ -1,26 +1,26 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "../db.js";
-import { assignments } from "../schema.js";
+import { assignmentsTable } from "../schema.js";
 import type { Assignment, NewAssignment } from "../../types.js";
 
 export async function createAssignment(data: NewAssignment): Promise<Assignment> {
-  const [row] = await db.insert(assignments).values(data).returning();
+  const [row] = await db.insert(assignmentsTable).values(data).returning();
   return row;
 }
 
 export async function findAssignmentById(
-  id: number,
+  id: string,
 ): Promise<Assignment | undefined> {
-  return db.query.assignments.findFirst({
-    where: eq(assignments.id, id),
+  return db.query.assignmentsTable.findFirst({
+    where: eq(assignmentsTable.id, id),
   });
 }
 
 export async function listAssignmentsByCourseId(
-  courseId: number,
+  courseId: string,
 ): Promise<Assignment[]> {
-  return db.query.assignments.findMany({
-    where: eq(assignments.courseId, courseId),
+  return db.query.assignmentsTable.findMany({
+    where: eq(assignmentsTable.courseId, courseId),
   });
 }

@@ -1,26 +1,25 @@
+import { db } from "../db.ts";
+import { studentsTable, usersTable } from "../schema.ts";
+import type { NewStudent, Student } from "../../types.ts";
 import { eq, inArray, like, sql } from "drizzle-orm";
 
-import { db } from "../db.js";
-import { students, users } from "../schema.js";
-import type { NewStudent, Student } from "../../types.js";
-
 export async function createStudent(data: NewStudent): Promise<Student> {
-  const [row] = await db.insert(students).values(data).returning();
+  const [row] = await db.insert(studentsTable).values(data).returning();
   return row;
 }
 
-export async function findStudentById(id: number) {
-  return db.query.students.findFirst({
-    where: eq(students.id, id),
+export async function findStudentById(id: string) {
+  return db.query.studentsTable.findFirst({
+    where: eq(studentsTable.id, id),
     with: { user: true },
   });
 }
 
 export async function findStudentByUserId(
-  userId: number,
+  userId: string,
 ): Promise<Awaited<ReturnType<typeof findStudentById>> | undefined> {
-  return db.query.students.findFirst({
-    where: eq(students.userId, userId),
+  return db.query.studentsTable.findFirst({
+    where: eq(studentsTable.userId, userId),
     with: { user: true },
   });
 }
@@ -40,51 +39,53 @@ export async function listStudents(
 
   const whereClause = searchValue
     ? inArray(
-        students.userId,
-        db
-          .select({ id: users.id })
-          .from(users)
-          .where(like(users.username, `%${searchValue}%`)),
-      )
+      studentsTable.userId,
+      db
+        .select({ id: usersTable.id })
+        .from(usersTable)
+        .where(like(usersTable.username, `%${searchValue}%`)),
+    )
     : undefined;
 
   const totalQuery = whereClause
     ? db
-        .select({ total: sql<number>`count(*)` })
-        .from(students)
-        .where(whereClause)
-    : db.select({ total: sql<number>`count(*)` }).from(students);
+      .select({ total: sql<number>`count(*)` })
+      .from(studentsTable)
+      .where(whereClause)
+    : db.select({ total: sql<number>`count(*)` }).from(studentsTable);
   const [totalRow] = await totalQuery;
   const total = Number(totalRow?.total ?? 0);
 
   const data = whereClause
-    ? await db.query.students.findMany({
-        where: whereClause,
-        with: { user: true },
-        limit: safeLimit,
-        offset,
-      })
-    : await db.query.students.findMany({
-        with: { user: true },
-        limit: safeLimit,
-        offset,
-      });
+    ? await db.query.studentsTable.findMany({
+      where: whereClause,
+      with: { user: true },
+      limit: safeLimit,
+      offset,
+    })
+    : await db.query.studentsTable.findMany({
+      with: { user: true },
+      limit: safeLimit,
+      offset,
+    });
 
   return { data, total };
 }
 
+// add both size and page
+
 export async function updateStudent(
-  id: number,
+  id: string,
   data: Partial<NewStudent>,
 ): Promise<Student | undefined> {
   const [row] = await db
-    .update(students)
+    .update(studentsTable)
     .set(data)
-    .where(eq(students.id, id))
+    .where(eq(studentsTable.id, id))
     .returning();
   return row;
 }
 
-export async function deleteStudent(id: number): Promise<void> {
-  await db.delete(students).where(eq(students.id, id));
+export async function deleteStudent(id: string): Promise<void> {
+  await db.delete(studentsTable).where(eq(studentsTable.id, id));
 }

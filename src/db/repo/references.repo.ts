@@ -1,26 +1,26 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "../db.js";
-import { references } from "../schema.js";
+import { referencesTable } from "../schema.js";
 import type { NewReference, Reference } from "../../types.js";
 
 export async function createReference(data: NewReference): Promise<Reference> {
-  const [row] = await db.insert(references).values(data).returning();
+  const [row] = await db.insert(referencesTable).values(data).returning();
   return row;
 }
 
 export async function findReferenceById(
-  id: number,
+  id: string,
 ): Promise<Reference | undefined> {
-  return db.query.references.findFirst({
-    where: eq(references.id, id),
+  return db.query.referencesTable.findFirst({
+    where: eq(referencesTable.id, id),
   });
 }
 
 export async function listReferencesByCourseId(
-  courseId: number,
+  courseId: string,
 ): Promise<Reference[]> {
-  return db.query.references.findMany({
-    where: eq(references.courseId, courseId),
+  return db.query.referencesTable.findMany({
+    where: eq(referencesTable.courseId, courseId),
   });
 }

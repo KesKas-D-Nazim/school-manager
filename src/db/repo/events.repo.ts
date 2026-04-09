@@ -2,17 +2,17 @@ import { and, eq, gte, lte } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 
 import { db } from "../db.js";
-import { events } from "../schema.js";
+import { eventsTable } from "../schema.js";
 import type { Event, NewEvent } from "../../types.js";
 
 export async function createEvent(data: NewEvent): Promise<Event> {
-  const [row] = await db.insert(events).values(data).returning();
+  const [row] = await db.insert(eventsTable).values(data).returning();
   return row;
 }
 
-export async function findEventById(id: number): Promise<Event | undefined> {
-  return db.query.events.findFirst({
-    where: eq(events.id, id),
+export async function findEventById(id: string): Promise<Event | undefined> {
+  return db.query.eventsTable.findFirst({
+    where: eq(eventsTable.id, id),
   });
 }
 
@@ -20,47 +20,47 @@ export async function listEvents(filters: {
   startDate?: string;
   endDate?: string;
   className?: string;
-  courseId?: number;
+  courseId?: string;
 } = {}): Promise<Event[]> {
   const conditions: SQL[] = [];
 
   if (filters.startDate) {
-    conditions.push(gte(events.date, filters.startDate));
+    conditions.push(gte(eventsTable.date, filters.startDate));
   }
 
   if (filters.endDate) {
-    conditions.push(lte(events.date, filters.endDate));
+    conditions.push(lte(eventsTable.date, filters.endDate));
   }
 
   if (filters.className) {
-    conditions.push(eq(events.className, filters.className));
+    conditions.push(eq(eventsTable.className, filters.className));
   }
 
   if (filters.courseId !== undefined) {
-    conditions.push(eq(events.courseId, filters.courseId));
+    conditions.push(eq(eventsTable.courseId, filters.courseId));
   }
 
   if (conditions.length === 0) {
-    return db.query.events.findMany();
+    return db.query.eventsTable.findMany();
   }
 
-  return db.query.events.findMany({
+  return db.query.eventsTable.findMany({
     where: and(...conditions),
   });
 }
 
 export async function updateEvent(
-  id: number,
+  id: string,
   data: Partial<NewEvent>,
 ): Promise<Event | undefined> {
   const [row] = await db
-    .update(events)
+    .update(eventsTable)
     .set(data)
-    .where(eq(events.id, id))
+    .where(eq(eventsTable.id, id))
     .returning();
   return row;
 }
 
-export async function deleteEvent(id: number): Promise<void> {
-  await db.delete(events).where(eq(events.id, id));
+export async function deleteEvent(id: string): Promise<void> {
+  await db.delete(eventsTable).where(eq(eventsTable.id, id));
 }

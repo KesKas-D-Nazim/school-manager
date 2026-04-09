@@ -1,28 +1,28 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "../db.js";
-import { notifications } from "../schema.js";
+import { notificationsTable } from "../schema.js";
 import type { NewNotification, Notification } from "../../types.js";
 
 export async function createNotification(
   data: NewNotification,
 ): Promise<Notification> {
-  const [row] = await db.insert(notifications).values(data).returning();
+  const [row] = await db.insert(notificationsTable).values(data).returning();
   return row;
 }
 
 export async function findNotificationById(
-  id: number,
+  id: string,
 ): Promise<Notification | undefined> {
-  return db.query.notifications.findFirst({
-    where: eq(notifications.id, id),
+  return db.query.notificationsTable.findFirst({
+    where: eq(notificationsTable.id, id),
   });
 }
 
 export async function listNotificationsByUserId(
-  userId: number,
+  userId: string,
 ): Promise<Notification[]> {
-  return db.query.notifications.findMany({
-    where: eq(notifications.usersId, userId),
+  return db.query.notificationsTable.findMany({
+    where: eq(notificationsTable.usersId, userId),
   });
 }

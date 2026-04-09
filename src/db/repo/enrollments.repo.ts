@@ -1,42 +1,42 @@
 import { and, eq } from "drizzle-orm";
 
 import { db } from "../db.js";
-import { enrollments } from "../schema.js";
+import { enrollmentsTable } from "../schema.js";
 import type { Enrollment, NewEnrollment } from "../../types.js";
 
 export async function createEnrollment(data: NewEnrollment): Promise<Enrollment> {
-  const [row] = await db.insert(enrollments).values(data).returning();
+  const [row] = await db.insert(enrollmentsTable).values(data).returning();
   return row;
 }
 
 export async function findEnrollmentById(
-  id: number,
+  id: string,
 ): Promise<Enrollment | undefined> {
-  return db.query.enrollments.findFirst({
-    where: eq(enrollments.id, id),
+  return db.query.enrollmentsTable.findFirst({
+    where: eq(enrollmentsTable.id, id),
   });
 }
 
 export async function findEnrollmentByStudentAndCourse(
-  studentId: number,
-  courseId: number,
+  studentId: string,
+  courseId: string,
 ): Promise<Enrollment | undefined> {
-  return db.query.enrollments.findFirst({
+  return db.query.enrollmentsTable.findFirst({
     where: and(
-      eq(enrollments.studentId, studentId),
-      eq(enrollments.courseId, courseId),
+      eq(enrollmentsTable.studentId, studentId),
+      eq(enrollmentsTable.courseId, courseId),
     ),
   });
 }
 
 export async function listEnrollmentsByStudentId(
-  studentId: number,
+  studentId: string,
 ): Promise<Enrollment[]> {
-  return db.query.enrollments.findMany({
-    where: eq(enrollments.studentId, studentId),
+  return db.query.enrollmentsTable.findMany({
+    where: eq(enrollmentsTable.studentId, studentId),
   });
 }
 
-export async function deleteEnrollment(id: number): Promise<void> {
-  await db.delete(enrollments).where(eq(enrollments.id, id));
+export async function deleteEnrollment(id: string): Promise<void> {
+  await db.delete(enrollmentsTable).where(eq(enrollmentsTable.id, id));
 }

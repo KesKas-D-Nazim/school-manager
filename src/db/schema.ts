@@ -1,9 +1,8 @@
-import { sql } from "drizzle-orm";
+import { text, uuid, pgTable } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
-export const users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const usersTable = pgTable("users", {
+  id: uuid("id").notNull().primaryKey(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   username: text("username").notNull().unique(),
@@ -12,23 +11,21 @@ export const users = sqliteTable("users", {
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
-export const usersRelations = relations(users, ({ one, many }) => ({
-  student: one(students, {
-    fields: [users.id],
-    references: [students.userId],
+export const usersRelations = relations(usersTable, ({ one, many }) => ({
+  student: one(studentsTable, {
+    fields: [usersTable.id],
+    references: [studentsTable.userId],
   }),
-  teacher: one(teachers, {
-    fields: [users.id],
-    references: [teachers.userId],
+  teacher: one(teachersTable, {
+    fields: [usersTable.id],
+    references: [teachersTable.userId],
   }),
-  notifications: many(notifications),
+  notifications: many(notificationsTable),
 }));
 
-export const students = sqliteTable("students", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+export const studentsTable = pgTable("students", {
+  id: uuid("id").notNull().primaryKey(),
+  userId: uuid("user_id").references(() => usersTable.id, { onDelete: "cascade" }),
   grade: text("grade"),
   classe: text("classe"),
   parentPhoneNumber: text("parent_phone_number"),
@@ -40,19 +37,17 @@ export const students = sqliteTable("students", {
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
-export const studentsRelations = relations(students, ({ one, many }) => ({
-  user: one(users, {
-    fields: [students.userId],
-    references: [users.id],
+export const studentsRelations = relations(studentsTable, ({ one, many }) => ({
+  user: one(usersTable, {
+    fields: [studentsTable.userId],
+    references: [usersTable.id],
   }),
-  enrollments: many(enrollments),
+  enrollments: many(enrollmentsTable),
 }));
 
-export const teachers = sqliteTable("teachers", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  userId: integer("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+export const teachersTable = pgTable("teachers", {
+  id: uuid("id").notNull().primaryKey(),
+  userId: uuid("user_id").references(() => usersTable.id, { onDelete: "cascade" }),
   gender: text("gender"),
   number: text("number"),
   address: text("address"),
@@ -63,91 +58,84 @@ export const teachers = sqliteTable("teachers", {
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
-export const teachersRelations = relations(teachers, ({ one, many }) => ({
-  user: one(users, {
-    fields: [teachers.userId],
-    references: [users.id],
+export const teachersRelations = relations(teachersTable, ({ one, many }) => ({
+  user: one(usersTable, {
+    fields: [teachersTable.userId],
+    references: [usersTable.id],
   }),
-  courses: many(courses),
+  courses: many(coursesTable),
 }));
 
-export const courses = sqliteTable("courses", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const coursesTable = pgTable("courses", {
+  id: uuid("id").notNull().primaryKey(),
   name: text("name").notNull(),
   description: text("description"),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
-  teacherId: integer("teacher_id")
-    .references(() => teachers.id, { onDelete: "set null" }),
+  teacherId: uuid("teacher_id").references(() => teachersTable.id, { onDelete: "set null" }),
 });
 
-export const coursesRelations = relations(courses, ({ one, many }) => ({
-  teacher: one(teachers, {
-    fields: [courses.teacherId],
-    references: [teachers.id],
+export const coursesRelations = relations(coursesTable, ({ one, many }) => ({
+  teacher: one(teachersTable, {
+    fields: [coursesTable.teacherId],
+    references: [teachersTable.id],
   }),
-  enrollments: many(enrollments),
-  references: many(references),
-  assignments: many(assignments),
-  events: many(events),
-  files: many(courseFiles),
+  enrollments: many(enrollmentsTable),
+  references: many(referencesTable),
+  assignments: many(assignmentsTable),
+  events: many(eventsTable),
+  files: many(courseFilesTable),
 }));
 
-export const enrollments = sqliteTable("enrollments", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  studentId: integer("student_id")
-    .notNull()
-    .references(() => students.id, { onDelete: "cascade" }),
-  courseId: integer("course_id")
-    .notNull()
-    .references(() => courses.id, { onDelete: "cascade" }),
+export const enrollmentsTable = pgTable("enrollments", {
+  id: uuid("id").notNull().primaryKey(),
+  studentId: uuid("student_id").references(() => studentsTable.id, { onDelete: "cascade" }),
+  courseId: uuid("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
   enrolledAt: text("enrolled_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
-export const enrollmentsRelations = relations(enrollments, ({ one }) => ({
-  student: one(students, {
-    fields: [enrollments.studentId],
-    references: [students.id],
+export const enrollmentsRelations = relations(enrollmentsTable, ({ one }) => ({
+  student: one(studentsTable, {
+    fields: [enrollmentsTable.studentId],
+    references: [studentsTable.id],
   }),
-  course: one(courses, {
-    fields: [enrollments.courseId],
-    references: [courses.id],
+  course: one(coursesTable, {
+    fields: [enrollmentsTable.courseId],
+    references: [coursesTable.id],
   }),
 }));
 
-export const references = sqliteTable("references", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  courseId: integer("course_id")
-    .notNull()
-    .references(() => courses.id, { onDelete: "cascade" }),
+export const referencesTable = pgTable("references", {
+  id: uuid("id").notNull().primaryKey(),
+  courseId: uuid("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   url: text("url").notNull(),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
-export const referencesRelations = relations(references, ({ one }) => ({
-  course: one(courses, {
-    fields: [references.courseId],
-    references: [courses.id],
+export const referencesRelations = relations(referencesTable, ({ one }) => ({
+  course: one(coursesTable, {
+    fields: [referencesTable.courseId],
+    references: [coursesTable.id],
   }),
 }));
 
-export const files = sqliteTable("files", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const filesTable = pgTable("files", {
+  id: uuid("id").notNull().primaryKey(),
   name: text("name").notNull(),
   key: text("key").notNull().unique(),
   extension: text("extension").notNull(),
   uploadedAt: text("uploaded_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
-export const filesRelations = relations(files, ({ many }) => ({
-  courseFiles: many(courseFiles),
-  assignmentFiles: many(assignmentFiles),
-  notificationFiles: many(notificationFiles),
+export const filesRelations = relations(filesTable, ({ many }) => ({
+  courseFiles: many(courseFilesTable),
+  assignmentFiles: many(assignmentFilesTable),
+  notificationFiles: many(notificationFilesTable),
 }));
 
-export const events = sqliteTable("events", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  courseId: integer("course_id").references(() => courses.id, {
+export const eventsTable = pgTable("events", {
+  id: uuid("id").notNull().primaryKey(),
+  courseId: uuid("course_id").references(() => coursesTable.id, {
     onDelete: "cascade",
   }),
   title: text("title").notNull(),
@@ -158,113 +146,95 @@ export const events = sqliteTable("events", {
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
-export const eventsRelations = relations(events, ({ one }) => ({
-  course: one(courses, {
-    fields: [events.courseId],
-    references: [courses.id],
+export const eventsRelations = relations(eventsTable, ({ one }) => ({
+  course: one(coursesTable, {
+    fields: [eventsTable.courseId],
+    references: [coursesTable.id],
   }),
 }));
 
-export const assignments = sqliteTable("assignments", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  courseId: integer("course_id")
-    .notNull()
-    .references(() => courses.id, { onDelete: "cascade" }),
+export const assignmentsTable = pgTable("assignments", {
+  id: uuid("id").notNull().primaryKey(),
+  courseId: uuid("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   description: text("description"),
   deadline: text("deadline").notNull(),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
-export const assignmentsRelations = relations(assignments, ({ one, many }) => ({
-  course: one(courses, {
-    fields: [assignments.courseId],
-    references: [courses.id],
+export const assignmentsRelations = relations(assignmentsTable, ({ one, many }) => ({
+  course: one(coursesTable, {
+    fields: [assignmentsTable.courseId],
+    references: [coursesTable.id],
   }),
-  files: many(assignmentFiles),
+  files: many(assignmentFilesTable),
 }));
 
-export const courseFiles = sqliteTable("course_files", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  courseId: integer("course_id")
-    .notNull()
-    .references(() => courses.id, { onDelete: "cascade" }),
-  fileId: integer("file_id")
-    .notNull()
-    .references(() => files.id, { onDelete: "cascade" }),
+export const courseFilesTable = pgTable("course_files", {
+  id: uuid("id").notNull().primaryKey(),
+  courseId: uuid("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
+  fileId: uuid("file_id").notNull().references(() => filesTable.id, { onDelete: "cascade" }),
 });
 
-export const courseFilesRelations = relations(courseFiles, ({ one }) => ({
-  course: one(courses, {
-    fields: [courseFiles.courseId],
-    references: [courses.id],
+export const courseFilesRelations = relations(courseFilesTable, ({ one }) => ({
+  course: one(coursesTable, {
+    fields: [courseFilesTable.courseId],
+    references: [coursesTable.id],
   }),
-  file: one(files, {
-    fields: [courseFiles.fileId],
-    references: [files.id],
+  file: one(filesTable, {
+    fields: [courseFilesTable.fileId],
+    references: [filesTable.id],
   }),
 }));
 
-export const assignmentFiles = sqliteTable("assignment_files", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  assignmentId: integer("assignment_id")
-    .notNull()
-    .references(() => assignments.id, { onDelete: "cascade" }),
-  fileId: integer("file_id")
-    .notNull()
-    .references(() => files.id, { onDelete: "cascade" }),
+export const assignmentFilesTable = pgTable("assignment_files", {
+  id: uuid("id").notNull().primaryKey(),
+  assignmentId: uuid("assignment_id").references(() => assignmentsTable.id, { onDelete: "cascade" }),
+  fileId: uuid("file_id").notNull().references(() => filesTable.id, { onDelete: "cascade" }),
 });
 
-export const assignmentFilesRelations = relations(assignmentFiles, ({ one }) => ({
-  assignment: one(assignments, {
-    fields: [assignmentFiles.assignmentId],
-    references: [assignments.id],
+export const assignmentFilesRelations = relations(assignmentFilesTable, ({ one }) => ({
+  assignment: one(assignmentsTable, {
+    fields: [assignmentFilesTable.assignmentId],
+    references: [assignmentsTable.id],
   }),
-  file: one(files, {
-    fields: [assignmentFiles.fileId],
-    references: [files.id],
+  file: one(filesTable, {
+    fields: [assignmentFilesTable.fileId],
+    references: [filesTable.id],
   }),
 }));
 
-export const notifications = sqliteTable("notifications", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  usersId: integer("users_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+export const notificationsTable = pgTable("notifications", {
+  id: uuid("id").notNull().primaryKey(),
+  usersId: uuid("users_id").references(() => usersTable.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   body: text("body").notNull(),
   sendTo: text("send_to").notNull(),
   createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
 });
 
-export const notificationsRelations = relations(notifications, ({ one, many }) => ({
-  user: one(users, {
-    fields: [notifications.usersId],
-    references: [users.id],
+export const notificationsRelations = relations(notificationsTable, ({ one, many }) => ({
+  user: one(usersTable, {
+    fields: [notificationsTable.usersId],
+    references: [usersTable.id],
   }),
-  files: many(notificationFiles),
+  files: many(notificationFilesTable),
 }));
 
-export const notificationFiles = sqliteTable("notification_files", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  notificationId: integer("notification_id")
-    .notNull()
-    .references(() => notifications.id, { onDelete: "cascade" }),
-  fileId: integer("file_id")
-    .notNull()
-    .references(() => files.id, { onDelete: "cascade" }),
+export const notificationFilesTable = pgTable("notification_files", {
+  id: uuid("id").notNull().primaryKey(),
+  notificationId: uuid("notification_id").notNull().references(() => notificationsTable.id, { onDelete: "cascade" }),
+  fileId: uuid("file_id").references(() => filesTable.id, { onDelete: "cascade" }),
 });
 
-export const notificationFilesRelations = relations(
-  notificationFiles,
-  ({ one }) => ({
-    notification: one(notifications, {
-      fields: [notificationFiles.notificationId],
-      references: [notifications.id],
-    }),
-    file: one(files, {
-      fields: [notificationFiles.fileId],
-      references: [files.id],
-    }),
+export const notificationFilesRelations = relations(notificationFilesTable, ({ one }) => ({
+  notification: one(notificationsTable, {
+    fields: [notificationFilesTable.notificationId],
+    references: [notificationsTable.id],
   }),
+  file: one(filesTable, {
+    fields: [notificationFilesTable.fileId],
+    references: [filesTable.id],
+  }),
+}),
 );

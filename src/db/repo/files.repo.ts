@@ -1,22 +1,22 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "../db.js";
-import { files } from "../schema.js";
+import { filesTable } from "../schema.js";
 import type { File, NewFile } from "../../types.js";
 
 export async function createFile(data: NewFile): Promise<File> {
-  const [row] = await db.insert(files).values(data).returning();
+  const [row] = await db.insert(filesTable).values(data).returning();
   return row;
 }
 
-export async function findFileById(id: number): Promise<File | undefined> {
-  return db.query.files.findFirst({
-    where: eq(files.id, id),
+export async function findFileById(id: string): Promise<File | undefined> {
+  return db.query.filesTable.findFirst({
+    where: eq(filesTable.id, id),
   });
 }
 
 export async function findFileByKey(key: string): Promise<File | undefined> {
-  return db.query.files.findFirst({
-    where: eq(files.key, key),
+  return db.query.filesTable.findFirst({
+    where: eq(filesTable.key, key),
   });
 }
