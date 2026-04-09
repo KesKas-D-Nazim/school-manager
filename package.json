@@ -5,27 +5,29 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.9",
     "@hono/zod-validator": "^0.7.6",
     "@libsql/client": "^0.17.0",
     "bcrypt": "^6.0.0",
+    "better-auth": "^1.6.1",
     "better-sqlite3": "^12.8.0",
     "dotenv": "^17.4.1",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.11.9",
     "pg": "^8.20.0",
-    "zod": "^4.3.6",
-    "better-auth": "^1.6.1"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.13.10",
     "@types/pg": "^8.20.0",
-    "drizzle-kit": "^0.18.1",
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   }
