@@ -2,16 +2,22 @@ import { db } from "../../db/db.js";
 import { findUserByEmail } from "../../db/repo/users.repo.js";
 import { usersTable } from "../../db/schema.js";
 import { NewUser, User } from "../../types.js"
+import z from "zod"
 import { PasswordHasher } from "../../utils/passwordHash.js";
+import { loginSchema, registerSchema } from "./auth.router.js";
+
+type login = z.infer<typeof loginSchema>
+type register = z.infer<typeof registerSchema>
 
 interface IUserAuth {
-    login: (user: User) => Promise<User | undefined>;
-    register: (user: NewUser) => Promise<User | undefined>;
+    login: (user: login) => Promise<login | undefined>;
+    register: (user: register) => Promise<register | undefined>;
 }
 
 
 class AuthController implements IUserAuth {
-    async login(user: User) {
+
+    async login(user: login) {
         const founduser = await findUserByEmail(user.email);
 
         if (!founduser) {
@@ -23,7 +29,7 @@ class AuthController implements IUserAuth {
         }
     }
 
-    async register(user: NewUser) {
+    async register(user: register) {
         const foundUser = await findUserByEmail(user.email);
         if (foundUser) {
             throw new Error("User already exists");
@@ -31,9 +37,9 @@ class AuthController implements IUserAuth {
 
         user.password = await PasswordHasher.hashPassword(user.password);
 
-        const [newUser] = await db.insert(usersTable).values(user).returning();
+        // const [newUser] = await db.insert(usersTable).values(user).returning();
 
-        if (user) return newUser;
+        if (user) return user;
 
     }
 }

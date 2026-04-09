@@ -4,12 +4,12 @@ import z from "zod"
 import { authController } from "./auth.controller"
 
 
-const loginSchema = z.object({
+export const loginSchema = z.object({
     email: z.email(),
     password: z.string().min(8),
 })
 
-const registerSchema = z.object({
+export const registerSchema = z.object({
     email: z.string().email(),
     password: z.string().min(8),
     username: z.string().min(3),
@@ -19,7 +19,7 @@ const usersRouter = new Hono()
     .post("/register", zValidator('json', registerSchema),
         async (c) => {
             const data = await c.req.valid("json");
-            const reponse  = authController.register(data);
+            const reponse = authController.register(data);
             if (!reponse) {
                 return c.text("User already exists", 400)
             }

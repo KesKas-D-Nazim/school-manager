@@ -20,7 +20,7 @@ app.notFound((c) => {
 serve(
   {
     fetch: app.fetch,
-    port: 8080,
+    port: 8888,
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
