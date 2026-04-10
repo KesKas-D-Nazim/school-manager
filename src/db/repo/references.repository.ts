@@ -1,8 +1,9 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "../db.js";
-import { referencesTable } from "../schema.js";
+
 import type { NewReference, Reference } from "../../types.js";
+import { referencesTable } from "../schemas.js";
 
 export async function createReference(data: NewReference): Promise<Reference> {
   const [row] = await db.insert(referencesTable).values(data).returning();

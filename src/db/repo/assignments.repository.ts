@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "../db.js";
-import { assignmentsTable } from "../schema.js";
+import { assignmentsTable } from "../schemas.js";
 import type { Assignment, NewAssignment } from "../../types.js";
 
 export async function createAssignment(data: NewAssignment): Promise<Assignment> {

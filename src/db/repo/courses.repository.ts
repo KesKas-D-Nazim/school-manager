@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "../db.js";
-import { coursesTable } from "../schema.js";
+import { coursesTable } from "../schemas.js";
 import type { Course, NewCourse } from "../../types.js";
 
 export async function createCourse(data: NewCourse): Promise<Course> {

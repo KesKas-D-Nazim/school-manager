@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 
 import { db } from "../db.js";
-import { enrollmentsTable } from "../schema.js";
+import { enrollmentsTable } from "../schemas.js";
 import type { Enrollment, NewEnrollment } from "../../types.js";
 
 export async function createEnrollment(data: NewEnrollment): Promise<Enrollment> {

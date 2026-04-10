@@ -1,11 +1,9 @@
-import { text, uuid, pgTable , pgEnum , timestamp , integer, varchar  , boolean,index} from "drizzle-orm/pg-core";
+import { text, uuid, pgTable, pgEnum, timestamp, integer, varchar, boolean, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-
 // * enums : 
-  export const roleEnum = pgEnum("role", ["student", "teacher", "owner"]);
-  export const statusEnum = pgEnum("status", ["Active", "Inactive", "Pending", "New"]);
-
+export const roleEnum = pgEnum("role", ["student", "teacher", "owner"]);
+export const statusEnum = pgEnum("status", ["Active", "Inactive", "Pending", "New"]);
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -13,7 +11,7 @@ export const users = pgTable("users", {
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
   passwordHash: varchar("password_hash", { length: 255 }).notNull(),
-  username: varchar("username", { length: 50 }).notNull().unique(),
+  username: varchar("username", { length: 50 }).notNull(),
   displayUsername: text("display_username"),
   telNumber: varchar("tel_number", { length: 20 }),
   role: roleEnum("role").notNull(),
@@ -22,7 +20,6 @@ export const users = pgTable("users", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
-  
 });
 
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -63,8 +60,6 @@ export const adminsRelations = relations(adminsTable, ({ one }) => ({
   }),
 }));
 
-
-
 export const studentsTable = pgTable("students", {
   id: uuid("id").notNull().primaryKey(),
   schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
@@ -89,7 +84,7 @@ export const studentsRelations = relations(studentsTable, ({ one, many }) => ({
   studentPictureFile: one(filesTable, {
     fields: [studentsTable.studentPictureFileId],
     references: [filesTable.id],
-  }), 
+  }),
 }));
 
 export const teachersTable = pgTable("teachers", {

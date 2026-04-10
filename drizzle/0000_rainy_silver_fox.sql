@@ -1,10 +1,10 @@
-CREATE TYPE "public"."role" AS ENUM('student', 'teacher', 'owner');--> statement-breakpoint
+CREATE TYPE "public"."role" AS ENUM('student', 'teacher', 'admin');--> statement-breakpoint
 CREATE TYPE "public"."status" AS ENUM('Active', 'Inactive', 'Pending', 'New');--> statement-breakpoint
 CREATE TABLE "account" (
-	"id" text PRIMARY KEY NOT NULL,
-	"account_id" text NOT NULL,
-	"provider_id" text NOT NULL,
-	"user_id" text NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"account_id" uuid NOT NULL,
+	"provider_id" uuid NOT NULL,
+	"user_id" uuid NOT NULL,
 	"access_token" text,
 	"refresh_token" text,
 	"id_token" text,
@@ -17,7 +17,7 @@ CREATE TABLE "account" (
 );
 --> statement-breakpoint
 CREATE TABLE "admins" (
-	"school_id" uuid PRIMARY KEY NOT NULL,
+	"school_id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"user_id" uuid NOT NULL,
 	"school_name" varchar(120) NOT NULL,
 	"number_students" integer DEFAULT 0 NOT NULL,
@@ -27,13 +27,13 @@ CREATE TABLE "admins" (
 );
 --> statement-breakpoint
 CREATE TABLE "assignment_files" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"assignment_id" uuid,
 	"file_id" uuid NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "assignments" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"school_id" uuid NOT NULL,
 	"course_id" uuid,
 	"title" varchar(160) NOT NULL,
@@ -43,13 +43,13 @@ CREATE TABLE "assignments" (
 );
 --> statement-breakpoint
 CREATE TABLE "course_files" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"course_id" uuid,
 	"file_id" uuid NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "courses" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"school_id" uuid NOT NULL,
 	"name" varchar(120) NOT NULL,
 	"description" text,
@@ -58,7 +58,7 @@ CREATE TABLE "courses" (
 );
 --> statement-breakpoint
 CREATE TABLE "enrollments" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"school_id" uuid NOT NULL,
 	"student_id" uuid,
 	"course_id" uuid,
@@ -66,7 +66,7 @@ CREATE TABLE "enrollments" (
 );
 --> statement-breakpoint
 CREATE TABLE "events" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"school_id" uuid NOT NULL,
 	"course_id" uuid,
 	"title" varchar(160) NOT NULL,
@@ -78,7 +78,7 @@ CREATE TABLE "events" (
 );
 --> statement-breakpoint
 CREATE TABLE "files" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" varchar(255) NOT NULL,
 	"key" varchar(512) NOT NULL,
 	"extension" varchar(20) NOT NULL,
@@ -87,13 +87,13 @@ CREATE TABLE "files" (
 );
 --> statement-breakpoint
 CREATE TABLE "notification_files" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"notification_id" uuid NOT NULL,
 	"file_id" uuid
 );
 --> statement-breakpoint
 CREATE TABLE "notifications" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"school_id" uuid NOT NULL,
 	"users_id" uuid,
 	"title" varchar(160) NOT NULL,
@@ -103,7 +103,7 @@ CREATE TABLE "notifications" (
 );
 --> statement-breakpoint
 CREATE TABLE "references" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"course_id" uuid,
 	"title" varchar(160) NOT NULL,
 	"url" varchar(2048) NOT NULL,
@@ -118,12 +118,12 @@ CREATE TABLE "session" (
 	"updated_at" timestamp NOT NULL,
 	"ip_address" text,
 	"user_agent" text,
-	"user_id" text NOT NULL,
+	"user_id" uuid NOT NULL,
 	CONSTRAINT "session_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
 CREATE TABLE "students" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"school_id" uuid NOT NULL,
 	"user_id" uuid,
 	"grade" varchar(20),
@@ -139,7 +139,7 @@ CREATE TABLE "students" (
 );
 --> statement-breakpoint
 CREATE TABLE "teachers" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"school_id" uuid NOT NULL,
 	"user_id" uuid,
 	"gender" varchar(20),
@@ -153,7 +153,7 @@ CREATE TABLE "teachers" (
 );
 --> statement-breakpoint
 CREATE TABLE "users" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"email" varchar(255) NOT NULL,
 	"email_verified" boolean DEFAULT false NOT NULL,
 	"image" text,
@@ -169,7 +169,7 @@ CREATE TABLE "users" (
 );
 --> statement-breakpoint
 CREATE TABLE "verification" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"identifier" text NOT NULL,
 	"value" text NOT NULL,
 	"expires_at" timestamp NOT NULL,

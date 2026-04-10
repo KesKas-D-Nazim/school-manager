@@ -1,17 +1,19 @@
 import "dotenv/config";
+import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
+import * as schema from "./schemas.ts";
+import { Pool } from "pg"
+import { seed } from "drizzle-seed";
 
-
-import { drizzle } from "drizzle-orm/node-postgres";
-import * as schema from "./schema.js";
-import { Pool } from "pg";
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+const sql = new Pool({ connectionString: process.env.DATABASE_URL! });
+
+export type Database = NodePgDatabase<typeof schema>
+export const db: Database = drizzle({
+    client: sql,
+    schema: { ...schema },
 });
 
-export const db = drizzle({
-    client: pool,
-    schema,
-});
+await seed(db, schema, { count: 100 });
+

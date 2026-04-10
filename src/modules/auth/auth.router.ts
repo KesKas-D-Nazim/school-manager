@@ -1,18 +1,8 @@
 import { Hono } from "hono"
 import { zValidator } from "@hono/zod-validator"
-import z from "zod"
 import { authController } from "./auth.controller"
+import { loginSchema, registerSchema } from "./auth.schema";
 
-export const loginSchema = z.object({
-    email: z.email(),
-    password: z.string().min(8),
-})
-
-export const registerSchema = z.object({
-    email: z.string().email(),
-    password: z.string().min(8),
-    username: z.string().min(3),
-})
 
 const usersRouter = new Hono()
     .post("/register", zValidator('json', registerSchema),

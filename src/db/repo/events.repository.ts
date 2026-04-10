@@ -2,7 +2,7 @@ import { and, eq, gte, lte } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 
 import { db } from "../db.js";
-import { eventsTable } from "../schema.js";
+import { eventsTable } from "../schemas.js";
 import type { Event, NewEvent } from "../../types.js";
 
 export async function createEvent(data: NewEvent): Promise<Event> {

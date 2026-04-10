@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "../db.js";
-import { notificationsTable } from "../schema.js";
+import { notificationsTable } from "../schemas.js";
 import type { NewNotification, Notification } from "../../types.js";
 
 export async function createNotification(

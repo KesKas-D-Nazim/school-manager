@@ -1,7 +1,7 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import type * as schema from "./db/schema.ts";
-import z, { success } from "zod";
+import type * as schema from "./db/schemas.ts";
+import z from "zod";
 
 export type Db = NodePgDatabase<typeof schema>;
 
@@ -76,16 +76,12 @@ export const searchSchema = z.object({
     limit: z.string().optional(),
 });
 
-
 export type SearchSchema = z.infer<typeof searchSchema>;
 
-
 export const userSearchSchema = z.object({
-    search: z.string().optional(),
-    page: z.number().int().optional(),
-    size: z.number().int().optional(),
-    name: z.string().optional(),
-    email: z.email().optional(),
+    search: z.string().optional().default(""),
+    page: z.number().int().optional().default(1),
+    size: z.number().int().optional().default(10),
     sortBy: z.enum(['name', 'email']).default('name'),
     sortOrder: z.enum(['asc', 'desc']).nullable().default('asc')
 });
