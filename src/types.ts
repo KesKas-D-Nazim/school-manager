@@ -84,9 +84,10 @@ export const userSearchSchema = z.object({
     search: z.string().optional(),
     page: z.number().int().optional(),
     size: z.number().int().optional(),
-    email: z.email().optional(),
     name: z.string().optional(),
-    id: z.string().optional(),
+    email: z.email().optional(),
+    sortBy: z.enum(['name', 'email']).default('name'),
+    sortOrder: z.enum(['asc', 'desc']).nullable().default('asc')
 });
 
 export const studentSearchSchema = userSearchSchema.extend({

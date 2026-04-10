@@ -3,9 +3,6 @@ import { zValidator } from "@hono/zod-validator"
 import z from "zod"
 import { authController } from "./auth.controller"
 
-
-
-
 export const loginSchema = z.object({
     email: z.email(),
     password: z.string().min(8),

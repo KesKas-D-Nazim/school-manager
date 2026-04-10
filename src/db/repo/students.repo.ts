@@ -28,6 +28,13 @@ export async function listStudents(
   search?: string,
   page = 1,
   limit = 10,
+  name = "",
+  email = "",
+  sortBy = "name",
+  sortOrder = "asc",
+  grade = "",
+  status = ""
+
 ): Promise<{
   data: NonNullable<Awaited<ReturnType<typeof findStudentById>>>[];
   total: number;
