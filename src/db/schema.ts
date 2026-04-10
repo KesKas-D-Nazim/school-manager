@@ -1,76 +1,129 @@
-import { text, uuid, pgTable } from "drizzle-orm/pg-core";
+import { text, uuid, pgTable , pgEnum , timestamp , integer, varchar  , boolean,index} from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-export const usersTable = pgTable("users", {
-  id: uuid("id").notNull().primaryKey(),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
-  username: text("username").notNull().unique(),
-  telNumber: text("tel_number"),
-  role: text("role", { enum: ["student", "teacher", "owner"] }).notNull(),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+
+// * enums : 
+  export const roleEnum = pgEnum("role", ["student", "teacher", "owner"]);
+  export const statusEnum = pgEnum("status", ["Active", "Inactive", "Pending", "New"]);
+
+
+export const users = pgTable("users", {
+  id: text("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  emailVerified: boolean("email_verified").default(false).notNull(),
+  image: text("image"),
+  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  username: varchar("username", { length: 50 }).notNull().unique(),
+  displayUsername: text("display_username"),
+  telNumber: varchar("tel_number", { length: 20 }),
+  role: roleEnum("role").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  
 });
 
-export const usersRelations = relations(usersTable, ({ one, many }) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
   student: one(studentsTable, {
-    fields: [usersTable.id],
+    fields: [users.id],
     references: [studentsTable.userId],
   }),
   teacher: one(teachersTable, {
-    fields: [usersTable.id],
+    fields: [users.id],
     references: [teachersTable.userId],
   }),
+  admin: one(adminsTable, {
+    fields: [users.id],
+    references: [adminsTable.userId],
+  }),
+  sessions: many(session),
+  accounts: many(account),
   notifications: many(notificationsTable),
 }));
 
+export const adminsTable = pgTable("admins", {
+  id: uuid("school_id").notNull().primaryKey(),
+  userId: uuid("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  schoolName: varchar("school_name", { length: 120 }).notNull(),
+  numberStudents: integer("number_students").notNull().default(0),
+  numberTeachers: integer("number_teachers").notNull().default(0),
+  schoolIconFileId: uuid("school_icon_file_id").references(() => filesTable.id, { onDelete: "set null" }),
+});
+
+export const adminsRelations = relations(adminsTable, ({ one }) => ({
+  user: one(users, {
+    fields: [adminsTable.userId],
+    references: [users.id],
+  }),
+  schoolIconFile: one(filesTable, {
+    fields: [adminsTable.schoolIconFileId],
+    references: [filesTable.id],
+  }),
+}));
+
+
+
 export const studentsTable = pgTable("students", {
   id: uuid("id").notNull().primaryKey(),
-  userId: uuid("user_id").references(() => usersTable.id, { onDelete: "cascade" }),
-  grade: text("grade"),
-  classe: text("classe"),
-  parentPhoneNumber: text("parent_phone_number"),
-  parentName: text("parent_name"),
-  status: text("status"),
-  gender: text("gender"),
+  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").unique().references(() => users.id, { onDelete: "cascade" }),
+  grade: varchar("grade", { length: 20 }),
+  classe: varchar("classe", { length: 40 }),
+  parentPhoneNumber: varchar("parent_phone_number", { length: 20 }),
+  parentName: varchar("parent_name", { length: 120 }),
+  status: statusEnum("status").notNull().default("New"),
+  gender: varchar("gender", { length: 20 }),
   address: text("address"),
-  dateOfBirth: text("date_of_birth"),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  dateOfBirth: varchar("date_of_birth", { length: 20 }),
+  studentPictureFileId: uuid("student_picture_file_id").references(() => filesTable.id, { onDelete: "set null" }),
 });
 
 export const studentsRelations = relations(studentsTable, ({ one, many }) => ({
-  user: one(usersTable, {
+  user: one(users, {
     fields: [studentsTable.userId],
-    references: [usersTable.id],
+    references: [users.id],
   }),
   enrollments: many(enrollmentsTable),
+  studentPictureFile: one(filesTable, {
+    fields: [studentsTable.studentPictureFileId],
+    references: [filesTable.id],
+  }), 
 }));
 
 export const teachersTable = pgTable("teachers", {
   id: uuid("id").notNull().primaryKey(),
-  userId: uuid("user_id").references(() => usersTable.id, { onDelete: "cascade" }),
-  gender: text("gender"),
-  number: text("number"),
+  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+  gender: varchar("gender", { length: 20 }),
+  telNumber: varchar("number", { length: 20 }),
   address: text("address"),
   subjects: text("subjects"),
-  dateOfBirth: text("date_of_birth"),
-  joiningDate: text("joining_date"),
-  status: text("status", { enum: ["Active", "Inactive", "Pending", "New"] }),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  dateOfBirth: varchar("date_of_birth", { length: 20 }),
+  joiningDate: varchar("joining_date", { length: 20 }),
+  status: statusEnum("status").notNull().default("New"),
+  teacherPictureFileId: uuid("teacher_picture_file_id").references(() => filesTable.id, { onDelete: "set null" }),
 });
 
 export const teachersRelations = relations(teachersTable, ({ one, many }) => ({
-  user: one(usersTable, {
+  user: one(users, {
     fields: [teachersTable.userId],
-    references: [usersTable.id],
+    references: [users.id],
   }),
   courses: many(coursesTable),
+  teacherPictureFile: one(filesTable, {
+    fields: [teachersTable.teacherPictureFileId],
+    references: [filesTable.id],
+  }),
 }));
 
 export const coursesTable = pgTable("courses", {
   id: uuid("id").notNull().primaryKey(),
-  name: text("name").notNull(),
+  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 120 }).notNull(),
   description: text("description"),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
   teacherId: uuid("teacher_id").references(() => teachersTable.id, { onDelete: "set null" }),
 });
 
@@ -88,9 +141,10 @@ export const coursesRelations = relations(coursesTable, ({ one, many }) => ({
 
 export const enrollmentsTable = pgTable("enrollments", {
   id: uuid("id").notNull().primaryKey(),
+  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
   studentId: uuid("student_id").references(() => studentsTable.id, { onDelete: "cascade" }),
   courseId: uuid("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
-  enrolledAt: text("enrolled_at").notNull().$defaultFn(() => new Date().toISOString()),
+  enrolledAt: timestamp("enrolled_at").defaultNow().notNull(),
 });
 
 export const enrollmentsRelations = relations(enrollmentsTable, ({ one }) => ({
@@ -107,9 +161,9 @@ export const enrollmentsRelations = relations(enrollmentsTable, ({ one }) => ({
 export const referencesTable = pgTable("references", {
   id: uuid("id").notNull().primaryKey(),
   courseId: uuid("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  url: text("url").notNull(),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  title: varchar("title", { length: 160 }).notNull(),
+  url: varchar("url", { length: 2048 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const referencesRelations = relations(referencesTable, ({ one }) => ({
@@ -121,29 +175,33 @@ export const referencesRelations = relations(referencesTable, ({ one }) => ({
 
 export const filesTable = pgTable("files", {
   id: uuid("id").notNull().primaryKey(),
-  name: text("name").notNull(),
-  key: text("key").notNull().unique(),
-  extension: text("extension").notNull(),
-  uploadedAt: text("uploaded_at").notNull().$defaultFn(() => new Date().toISOString()),
+  name: varchar("name", { length: 255 }).notNull(),
+  key: varchar("key", { length: 512 }).notNull().unique(),
+  extension: varchar("extension", { length: 20 }).notNull(),
+  uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
 });
 
 export const filesRelations = relations(filesTable, ({ many }) => ({
   courseFiles: many(courseFilesTable),
   assignmentFiles: many(assignmentFilesTable),
   notificationFiles: many(notificationFilesTable),
+  adminSchoolIcons: many(adminsTable),
+  studentPictures: many(studentsTable),
+  teacherPictures: many(teachersTable),
 }));
 
 export const eventsTable = pgTable("events", {
   id: uuid("id").notNull().primaryKey(),
+  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
   courseId: uuid("course_id").references(() => coursesTable.id, {
     onDelete: "cascade",
   }),
-  title: text("title").notNull(),
+  title: varchar("title", { length: 160 }).notNull(),
   description: text("description"),
   type: text("type", { enum: ["class", "exam", "event", "holiday"] }).notNull(),
-  date: text("date").notNull(),
-  className: text("class_name"),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  date: timestamp("date").notNull(),
+  className: varchar("class_name", { length: 80 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const eventsRelations = relations(eventsTable, ({ one }) => ({
@@ -155,11 +213,12 @@ export const eventsRelations = relations(eventsTable, ({ one }) => ({
 
 export const assignmentsTable = pgTable("assignments", {
   id: uuid("id").notNull().primaryKey(),
+  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
   courseId: uuid("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
+  title: varchar("title", { length: 160 }).notNull(),
   description: text("description"),
-  deadline: text("deadline").notNull(),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  deadline: timestamp("deadline").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const assignmentsRelations = relations(assignmentsTable, ({ one, many }) => ({
@@ -206,17 +265,18 @@ export const assignmentFilesRelations = relations(assignmentFilesTable, ({ one }
 
 export const notificationsTable = pgTable("notifications", {
   id: uuid("id").notNull().primaryKey(),
-  usersId: uuid("users_id").references(() => usersTable.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
+  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
+  usersId: uuid("users_id").references(() => users.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 160 }).notNull(),
   body: text("body").notNull(),
-  sendTo: text("send_to").notNull(),
-  createdAt: text("created_at").notNull().$defaultFn(() => new Date().toISOString()),
+  sendTo: varchar("send_to", { length: 40 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const notificationsRelations = relations(notificationsTable, ({ one, many }) => ({
-  user: one(usersTable, {
+  user: one(users, {
     fields: [notificationsTable.usersId],
-    references: [usersTable.id],
+    references: [users.id],
   }),
   files: many(notificationFilesTable),
 }));
@@ -238,3 +298,79 @@ export const notificationFilesRelations = relations(notificationFilesTable, ({ o
   }),
 }),
 );
+
+// * auth tables :
+export const session = pgTable(
+  "session",
+  {
+    id: text("id").primaryKey(),
+    expiresAt: timestamp("expires_at").notNull(),
+    token: text("token").notNull().unique(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+  },
+  (table) => [index("session_userId_idx").on(table.userId)],
+);
+
+export const account = pgTable(
+  "account",
+  {
+    id: text("id").primaryKey(),
+    accountId: text("account_id").notNull(),
+    providerId: text("provider_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    idToken: text("id_token"),
+    accessTokenExpiresAt: timestamp("access_token_expires_at"),
+    refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+    scope: text("scope"),
+    password: text("password"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [index("account_userId_idx").on(table.userId)],
+);
+
+export const verification = pgTable(
+  "verification",
+  {
+    id: text("id").primaryKey(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [index("verification_identifier_idx").on(table.identifier)],
+);
+
+
+
+export const sessionRelations = relations(session, ({ one }) => ({
+  users: one(users, {
+    fields: [session.userId],
+    references: [users.id],
+  }),
+}));
+
+export const accountRelations = relations(account, ({ one }) => ({
+  users: one(users, {
+    fields: [account.userId],
+    references: [users.id],
+  }),
+}));

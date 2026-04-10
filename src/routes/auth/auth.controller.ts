@@ -1,6 +1,6 @@
 import { db } from "../../db/db.js";
 import { findUserByEmail } from "../../db/repo/users.repo.js";
-import { usersTable } from "../../db/schema.js";
+import { users } from "../../db/schema.js";
 import { NewUser, User } from "../../types.js"
 import z from "zod"
 import { PasswordHasher } from "../../utils/passwordHash.js";
@@ -24,9 +24,10 @@ class AuthController implements IUserAuth {
             throw new Error("User not found");
         }
 
-        if (await PasswordHasher.comparePassword(user.password, founduser.password)) {
-            return founduser;
-        }
+        //if (await PasswordHasher.comparePassword(user.password, founduser.password)) {
+        //    return founduser;
+        //}
+        return undefined;
     }
 
     async register(user: register) {
