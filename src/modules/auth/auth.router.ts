@@ -8,7 +8,7 @@ const usersRouter = new Hono()
     .post("/register", zValidator('json', registerSchema),
         async (c) => {
             const data = c.req.valid("json");
-            const reponse = authController.register(data);
+            const reponse = await authController.register(data);
             if (!reponse) {
                 return c.text("User already exists", 400)
             }

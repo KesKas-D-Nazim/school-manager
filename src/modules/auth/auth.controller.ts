@@ -1,6 +1,8 @@
-import { findUserByEmail } from "../../db/repo/users.repository.js";
+import { findUserByEmail, createUser } from "../../db/repo/users.repository.js";
 import { passwordHasher } from "./services/password_hasher.service.js";
 import { LoginBody, RegisterBody } from "./auth.schema.js";
+import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
 
 class AuthController {
 
@@ -11,10 +13,22 @@ class AuthController {
             throw new Error("User not found");
         }
 
-        //if (await PasswordHasher.comparePassword(user.password, founduser.password)) {
-        //    return founduser;
-        //}
-        return undefined;
+        const isMatch = await passwordHasher.comparePassword(
+            user.password,
+            founduser.passwordHash
+        );
+
+        if (!isMatch) {
+            throw new Error("Invalid credentials");
+        }
+
+        const token = jwt.sign(
+            { userId: founduser.id },
+            process.env.JWT_SECRET!,
+            { expiresIn: "1d" }
+        );
+
+        return { token };
     }
 
     async register(user: RegisterBody) {
@@ -23,11 +37,16 @@ class AuthController {
             throw new Error("User already exists");
         }
 
-        user.password = await passwordHasher.hashPassword(user.password);
+        const hashedPassword = await passwordHasher.hashPassword(user.password);
 
-        // const [newUser] = await db.insert(usersTable).values(user).returning();
-
-        if (user) return user;
+        const newUser = await createUser({
+            id: uuidv4(),
+            email: user.email,
+            username: user.username,
+            passwordHash: hashedPassword,
+            role: "student", 
+        });
+        return newUser;
 
     }
 }
