@@ -1,11 +1,11 @@
+import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from 'hono/cors'
-import "dotenv/config";
 import authRouter from "./modules/auth/auth.router.ts";
 import { db } from "./db/db.ts";
-import { adminRouter } from "./modules/admin/admin.router.ts";
-import { studentsRouter } from "./modules/students/students.router.ts";
+//import { adminRouter } from "./modules/admin/admin.router.ts";
+import studentsRouter from "./modules/students/students.router.ts";
 
 const app = new Hono();
 
@@ -18,7 +18,7 @@ app.get("/", async (c) => {
 
 app.route("/auth", authRouter);
 
-app.route("/admin", adminRouter);
+//app.route("/admin", adminRouter);
 
 app.route("/students", studentsRouter);
 
