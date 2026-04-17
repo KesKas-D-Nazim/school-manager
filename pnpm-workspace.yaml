@@ -1,5 +1,6 @@
 onlyBuiltDependencies:
   - bcrypt
   - better-sqlite3
+  - bufferutil
   - es5-ext
   - esbuild

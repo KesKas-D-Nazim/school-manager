@@ -1,11 +1,12 @@
-import { findUserByEmail } from "../../db/repo/users.repository.js";
 import { passwordHasher } from "./services/password_hasher.service.js";
 import { LoginBody, RegisterBody } from "./auth.schema.js";
+import { usersRepository,IUsersRepository } from "../../db/repo/users.repository.js";
 
 class AuthController {
+    constructor(private readonly usersRepository: IUsersRepository) { }
 
     async login(user: LoginBody) {
-        const founduser = await findUserByEmail(user.email);
+        const founduser = await this.usersRepository.findUserByEmail(user.email);
 
         if (!founduser) {
             throw new Error("User not found");
@@ -18,7 +19,7 @@ class AuthController {
     }
 
     async register(user: RegisterBody) {
-        const foundUser = await findUserByEmail(user.email);
+        const foundUser = await this.usersRepository.findUserByEmail(user.email);
         if (foundUser) {
             throw new Error("User already exists");
         }
@@ -32,7 +33,7 @@ class AuthController {
     }
 }
 
-export const authController = new AuthController();
+export const authController = new AuthController(usersRepository);
 
 
 

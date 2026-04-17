@@ -1,4 +1,5 @@
-import { ITeachersRepository, teachersRepository } from "../../db/repo/index.ts";
+
+import { ITeachersRepository, teachersRepository } from "../../db/repo/teachers.repository.ts";
 import { TeacherSearchSchema } from "../../types.ts";
 
 

@@ -1,15 +1,15 @@
 import { eq, inArray, like, sql } from "drizzle-orm";
 
 import { Database, db } from "../db.js";
-import { teachersTable, users } from "../schemas.js";
 import type { NewTeacher, Teacher, TeacherSearchSchema } from "../../types.js";
 import { TeacherWithUser } from "../../modules/teachers/teachers.types.js";
+import { teachersTable, users } from "../schema.js";
 
 export interface ITeachersRepository {
   createTeacher(data: NewTeacher): Promise<Teacher>;
   findTeacherById(id: string): Promise<Teacher | undefined>;
   findTeacherByUserId(userId: string): Promise<Teacher | undefined>;
-  listTeachers(search_aueries: TeacherSearchSchema): Promise<{ data: TeacherWithUser[]; pagination: { totalCount: number, totalPages: number } }>;
+  listTeachers(search_queries: TeacherSearchSchema): Promise<{ data: TeacherWithUser[]; pagination: { totalCount: number, totalPages: number } }>;
   updateTeacher(id: string, data: Partial<NewTeacher>): Promise<Teacher | undefined>;
   deleteTeacher(id: string): Promise<void>;
 }

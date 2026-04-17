@@ -1,6 +1,6 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import type * as schema from "./db/schemas.ts";
+import type * as schema from "./db/schema.ts";
 import z from "zod";
 
 export type Db = NodePgDatabase<typeof schema>;
@@ -14,35 +14,35 @@ export type NewStudent = typeof schema.studentsTable.$inferInsert;
 export type Teacher = typeof schema.teachersTable.$inferSelect;
 export type NewTeacher = typeof schema.teachersTable.$inferInsert;
 
-export type Course = typeof schema.coursesTable.$inferSelect;
-export type NewCourse = typeof schema.coursesTable.$inferInsert;
+// export type Course = typeof schema.coursesTable.$inferSelect;
+// export type NewCourse = typeof schema.coursesTable.$inferInsert;
 
-export type Enrollment = typeof schema.enrollmentsTable.$inferSelect;
-export type NewEnrollment = typeof schema.enrollmentsTable.$inferInsert;
+// export type Enrollment = typeof schema.enrollmentsTable.$inferSelect;
+// export type NewEnrollment = typeof schema.enrollmentsTable.$inferInsert;
 
-export type Reference = typeof schema.referencesTable.$inferSelect;
-export type NewReference = typeof schema.referencesTable.$inferInsert;
+// export type Reference = typeof schema.referencesTable.$inferSelect;
+// export type NewReference = typeof schema.referencesTable.$inferInsert;
 
-export type File = typeof schema.filesTable.$inferSelect;
-export type NewFile = typeof schema.filesTable.$inferInsert;
+// export type File = typeof schema.filesTable.$inferSelect;
+// export type NewFile = typeof schema.filesTable.$inferInsert;
 
-export type Event = typeof schema.eventsTable.$inferSelect;
-export type NewEvent = typeof schema.eventsTable.$inferInsert;
+// export type Event = typeof schema.eventsTable.$inferSelect;
+// export type NewEvent = typeof schema.eventsTable.$inferInsert;
 
-export type Assignment = typeof schema.assignmentsTable.$inferSelect;
-export type NewAssignment = typeof schema.assignmentsTable.$inferInsert;
+// export type Assignment = typeof schema.assignmentsTable.$inferSelect;
+// export type NewAssignment = typeof schema.assignmentsTable.$inferInsert;
 
-export type CourseFile = typeof schema.courseFilesTable.$inferSelect;
-export type NewCourseFile = typeof schema.courseFilesTable.$inferInsert;
+// export type CourseFile = typeof schema.courseFilesTable.$inferSelect;
+// export type NewCourseFile = typeof schema.courseFilesTable.$inferInsert;
 
-export type AssignmentFile = typeof schema.assignmentFilesTable.$inferSelect;
-export type NewAssignmentFile = typeof schema.assignmentFilesTable.$inferInsert;
+// export type AssignmentFile = typeof schema.assignmentFilesTable.$inferSelect;
+// export type NewAssignmentFile = typeof schema.assignmentFilesTable.$inferInsert;
 
-export type Notification = typeof schema.notificationsTable.$inferSelect;
-export type NewNotification = typeof schema.notificationsTable.$inferInsert;
+// export type Notification = typeof schema.notificationsTable.$inferSelect;
+// export type NewNotification = typeof schema.notificationsTable.$inferInsert;
 
-export type NotificationFile = typeof schema.notificationFilesTable.$inferSelect;
-export type NewNotificationFile = typeof schema.notificationFilesTable.$inferInsert;
+// export type NotificationFile = typeof schema.notificationFilesTable.$inferSelect;
+// export type NewNotificationFile = typeof schema.notificationFilesTable.$inferInsert;
 
 
 // this is ayoub code i know it needs some changes but it's first step 
@@ -80,15 +80,15 @@ export type SearchSchema = z.infer<typeof searchSchema>;
 
 export const userSearchSchema = z.object({
     search: z.string().optional().default(""),
-    page: z.number().int().optional().default(1),
-    size: z.number().int().optional().default(10),
+    page: z.coerce.number().int().optional().default(1),
+    size: z.coerce.number().int().optional().default(10),
     sortBy: z.enum(['name', 'email']).default('name'),
     sortOrder: z.enum(['asc', 'desc']).nullable().default('asc')
 });
 
 export const studentSearchSchema = userSearchSchema.extend({
-    grade: z.string().optional(),
-    status: z.string()
+    grade: z.string().optional().default(""),
+    status: z.string().default("")
 });
 
 export const teacherSearchSchema = userSearchSchema.extend({
@@ -98,3 +98,5 @@ export const teacherSearchSchema = userSearchSchema.extend({
 export type UserSearchSchema = z.infer<typeof userSearchSchema>;
 export type StudentSearchSchema = z.infer<typeof studentSearchSchema>;
 export type TeacherSearchSchema = z.infer<typeof teacherSearchSchema>;
+
+export const validUUIDSchema = z.string().uuid();

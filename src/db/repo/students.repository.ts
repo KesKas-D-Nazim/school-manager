@@ -1,14 +1,14 @@
 import { db, type Database } from "../db.ts";
-import { studentsTable, users } from "../schemas.ts";
+import { studentsTable, users } from "../schema.ts";
 import type { NewStudent, Student, StudentSearchSchema } from "../../types.ts";
-import { eq, inArray, like, sql } from "drizzle-orm";
-import { StudentWithUser } from "../../modules/students/students.types.ts";
+import { count, eq, inArray, like, sql } from "drizzle-orm";
+import { StudentUser, StudentUserDto } from "../../modules/students/students.types.ts";
 
 export interface IStudentsRepository {
   createStudent(data: NewStudent): Promise<Student>;
-  findStudentById(id: string): Promise<StudentWithUser | undefined>;
-  findStudentByUserId(userId: string): Promise<StudentWithUser | undefined>;
-  listStudents(search_queries: StudentSearchSchema): Promise<{ data: StudentWithUser[]; pagination: { totalCount: number, totalPages: number } }>;
+  findStudentById(id: string): Promise<StudentUser | undefined>;
+  findStudentByUserId(userId: string): Promise<StudentUser | undefined>;
+  listStudents(search_queries: StudentSearchSchema): Promise<{ data: StudentUser[]; pagination: { totalCount: number, totalPages: number } }>;
   updateStudent(id: string, data: Partial<NewStudent>): Promise<Student | undefined>;
   deleteStudent(id: string): Promise<void>;
 }
@@ -17,87 +17,76 @@ class StudentsRepository implements IStudentsRepository {
   constructor(private readonly db: Database) { }
 
   async createStudent(data: NewStudent): Promise<Student> {
-    const [row] = await this.db.insert(studentsTable).values(data).returning();
-    return row;
+    const [student] = await this.db.insert(studentsTable).values(data).returning();
+    return student;
   }
 
   async findStudentById(id: string) {
-    return db.query.studentsTable.findFirst({
+    const student = await db.query.studentsTable.findFirst({
       where: eq(studentsTable.id, id),
       with: { user: true },
     });
+    return !student ? undefined : StudentUserDto(student, student.user!)
   }
 
   async findStudentByUserId(
     userId: string,
   ) {
-    return this.db.query.studentsTable.findFirst({
+    const student = await this.db.query.studentsTable.findFirst({
       where: eq(studentsTable.userId, userId),
       with: { user: true },
     });
+    return !student ? undefined : StudentUserDto(student, student.user!)
+
   }
 
-  async listStudents({
-    search,
-    page,
-    size,
-    sortBy,
-    sortOrder,
-    grade,
-    status
-  }: StudentSearchSchema
-  ) {
+  async listStudents({ search, page, size }: StudentSearchSchema) {
     const offset = (page - 1) * size;
     const searchValue = search?.trim();
 
+    // Define the where clause once
     const whereClause = searchValue
       ? inArray(
         studentsTable.userId,
         this.db
           .select({ id: users.id })
           .from(users)
-          .where(like(users.username, `%${searchValue}%`)),
+          .where(like(users.username, `%${searchValue}%`))
       )
       : undefined;
 
-    const totalQuery = whereClause
-      ? this.db
-        .select({ total: sql<number>`count(*)` })
-        .from(studentsTable)
-        .where(whereClause)
-      : this.db.select({ total: sql<number>`count(*)` }).from(studentsTable);
-    const [totalRow] = await totalQuery;
-    const totalCount = Number(totalRow?.total ?? 0);
-    const totalPages = Math.ceil(totalCount / size);
-
-    const data = whereClause
-      ? await this.db.query.studentsTable.findMany({
+    // Run both queries in parallel to save time
+    const [data] = await Promise.all([
+      this.db.query.studentsTable.findMany({
         where: whereClause,
         with: { user: true },
         limit: size,
         offset,
-      })
-      : await this.db.query.studentsTable.findMany({
-        with: { user: true },
-        limit: size,
-        offset,
-      });
+      }),
+      // this.db
+      //   .select({ total: count() })
+      //   .from(studentsTable)
+      //   .where(whereClause),
+    ]);
 
-    return { data, pagination: { totalCount, totalPages } };
+    const totalCount = 0// Number(totalResult[0]?.total ?? 0);
+    const totalPages = 0// Math.ceil(totalCount / size);
+
+    const data_dtos = data.map(student => StudentUserDto(student, student.user!))
+    return { data: data_dtos, pagination: { totalCount, totalPages } };
   }
 
-  // add both size and page
 
   async updateStudent(
     id: string,
     data: Partial<NewStudent>,
   ): Promise<Student | undefined> {
-    const [row] = await this.db
+    const [student] = await this.db
       .update(studentsTable)
       .set(data)
       .where(eq(studentsTable.id, id))
       .returning();
-    return row;
+    return student;
   }
 
   async deleteStudent(id: string): Promise<void> {
