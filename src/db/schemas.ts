@@ -1,4 +1,4 @@
-import { text, uuid, pgTable, pgEnum, timestamp, integer, varchar, boolean, index } from "drizzle-orm/pg-core";
+import { text, pgTable, pgEnum, timestamp, integer, varchar, boolean, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // * enums : 
@@ -41,12 +41,12 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 }));
 
 export const adminsTable = pgTable("admins", {
-  id: uuid("school_id").notNull().primaryKey(),
-  userId: uuid("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  id: text("school_id").notNull().primaryKey(),
+  userId: text("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
   schoolName: varchar("school_name", { length: 120 }).notNull(),
   numberStudents: integer("number_students").notNull().default(0),
   numberTeachers: integer("number_teachers").notNull().default(0),
-  schoolIconFileId: uuid("school_icon_file_id").references(() => filesTable.id, { onDelete: "set null" }),
+  schoolIconFileId: text("school_icon_file_id").references(() => filesTable.id, { onDelete: "set null" }),
 });
 
 export const adminsRelations = relations(adminsTable, ({ one }) => ({
@@ -61,9 +61,9 @@ export const adminsRelations = relations(adminsTable, ({ one }) => ({
 }));
 
 export const studentsTable = pgTable("students", {
-  id: uuid("id").notNull().primaryKey(),
-  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
-  userId: uuid("user_id").unique().references(() => users.id, { onDelete: "cascade" }),
+  id: text("id").notNull().primaryKey(),
+  schoolId: text("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
+  userId: text("user_id").unique().references(() => users.id, { onDelete: "cascade" }),
   grade: varchar("grade", { length: 20 }),
   classe: varchar("classe", { length: 40 }),
   parentPhoneNumber: varchar("parent_phone_number", { length: 20 }),
@@ -72,7 +72,7 @@ export const studentsTable = pgTable("students", {
   gender: varchar("gender", { length: 20 }),
   address: text("address"),
   dateOfBirth: varchar("date_of_birth", { length: 20 }),
-  studentPictureFileId: uuid("student_picture_file_id").references(() => filesTable.id, { onDelete: "set null" }),
+  studentPictureFileId: text("student_picture_file_id").references(() => filesTable.id, { onDelete: "set null" }),
 });
 
 export const studentsRelations = relations(studentsTable, ({ one, many }) => ({
@@ -88,9 +88,9 @@ export const studentsRelations = relations(studentsTable, ({ one, many }) => ({
 }));
 
 export const teachersTable = pgTable("teachers", {
-  id: uuid("id").notNull().primaryKey(),
-  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+  id: text("id").notNull().primaryKey(),
+  schoolId: text("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
   gender: varchar("gender", { length: 20 }),
   telNumber: varchar("number", { length: 20 }),
   address: text("address"),
@@ -98,7 +98,7 @@ export const teachersTable = pgTable("teachers", {
   dateOfBirth: varchar("date_of_birth", { length: 20 }),
   joiningDate: varchar("joining_date", { length: 20 }),
   status: statusEnum("status").notNull().default("New"),
-  teacherPictureFileId: uuid("teacher_picture_file_id").references(() => filesTable.id, { onDelete: "set null" }),
+  teacherPictureFileId: text("teacher_picture_file_id").references(() => filesTable.id, { onDelete: "set null" }),
 });
 
 export const teachersRelations = relations(teachersTable, ({ one, many }) => ({
@@ -114,12 +114,12 @@ export const teachersRelations = relations(teachersTable, ({ one, many }) => ({
 }));
 
 export const coursesTable = pgTable("courses", {
-  id: uuid("id").notNull().primaryKey(),
-  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
+  id: text("id").notNull().primaryKey(),
+  schoolId: text("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 120 }).notNull(),
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  teacherId: uuid("teacher_id").references(() => teachersTable.id, { onDelete: "set null" }),
+  teacherId: text("teacher_id").references(() => teachersTable.id, { onDelete: "set null" }),
 });
 
 export const coursesRelations = relations(coursesTable, ({ one, many }) => ({
@@ -135,10 +135,10 @@ export const coursesRelations = relations(coursesTable, ({ one, many }) => ({
 }));
 
 export const enrollmentsTable = pgTable("enrollments", {
-  id: uuid("id").notNull().primaryKey(),
-  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
-  studentId: uuid("student_id").references(() => studentsTable.id, { onDelete: "cascade" }),
-  courseId: uuid("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
+  id: text("id").notNull().primaryKey(),
+  schoolId: text("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
+  studentId: text("student_id").references(() => studentsTable.id, { onDelete: "cascade" }),
+  courseId: text("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
   enrolledAt: timestamp("enrolled_at").defaultNow().notNull(),
 });
 
@@ -154,8 +154,8 @@ export const enrollmentsRelations = relations(enrollmentsTable, ({ one }) => ({
 }));
 
 export const referencesTable = pgTable("references", {
-  id: uuid("id").notNull().primaryKey(),
-  courseId: uuid("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
+  id: text("id").notNull().primaryKey(),
+  courseId: text("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 160 }).notNull(),
   url: varchar("url", { length: 2048 }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -169,7 +169,7 @@ export const referencesRelations = relations(referencesTable, ({ one }) => ({
 }));
 
 export const filesTable = pgTable("files", {
-  id: uuid("id").notNull().primaryKey(),
+  id: text("id").notNull().primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   key: varchar("key", { length: 512 }).notNull().unique(),
   extension: varchar("extension", { length: 20 }).notNull(),
@@ -186,9 +186,9 @@ export const filesRelations = relations(filesTable, ({ many }) => ({
 }));
 
 export const eventsTable = pgTable("events", {
-  id: uuid("id").notNull().primaryKey(),
-  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
-  courseId: uuid("course_id").references(() => coursesTable.id, {
+  id: text("id").notNull().primaryKey(),
+  schoolId: text("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
+  courseId: text("course_id").references(() => coursesTable.id, {
     onDelete: "cascade",
   }),
   title: varchar("title", { length: 160 }).notNull(),
@@ -207,9 +207,9 @@ export const eventsRelations = relations(eventsTable, ({ one }) => ({
 }));
 
 export const assignmentsTable = pgTable("assignments", {
-  id: uuid("id").notNull().primaryKey(),
-  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
-  courseId: uuid("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
+  id: text("id").notNull().primaryKey(),
+  schoolId: text("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
+  courseId: text("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 160 }).notNull(),
   description: text("description"),
   deadline: timestamp("deadline").notNull(),
@@ -225,9 +225,9 @@ export const assignmentsRelations = relations(assignmentsTable, ({ one, many }) 
 }));
 
 export const courseFilesTable = pgTable("course_files", {
-  id: uuid("id").notNull().primaryKey(),
-  courseId: uuid("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
-  fileId: uuid("file_id").notNull().references(() => filesTable.id, { onDelete: "cascade" }),
+  id: text("id").notNull().primaryKey(),
+  courseId: text("course_id").references(() => coursesTable.id, { onDelete: "cascade" }),
+  fileId: text("file_id").notNull().references(() => filesTable.id, { onDelete: "cascade" }),
 });
 
 export const courseFilesRelations = relations(courseFilesTable, ({ one }) => ({
@@ -242,9 +242,9 @@ export const courseFilesRelations = relations(courseFilesTable, ({ one }) => ({
 }));
 
 export const assignmentFilesTable = pgTable("assignment_files", {
-  id: uuid("id").notNull().primaryKey(),
-  assignmentId: uuid("assignment_id").references(() => assignmentsTable.id, { onDelete: "cascade" }),
-  fileId: uuid("file_id").notNull().references(() => filesTable.id, { onDelete: "cascade" }),
+  id: text("id").notNull().primaryKey(),
+  assignmentId: text("assignment_id").references(() => assignmentsTable.id, { onDelete: "cascade" }),
+  fileId: text("file_id").notNull().references(() => filesTable.id, { onDelete: "cascade" }),
 });
 
 export const assignmentFilesRelations = relations(assignmentFilesTable, ({ one }) => ({
@@ -259,9 +259,9 @@ export const assignmentFilesRelations = relations(assignmentFilesTable, ({ one }
 }));
 
 export const notificationsTable = pgTable("notifications", {
-  id: uuid("id").notNull().primaryKey(),
-  schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
-  usersId: uuid("users_id").references(() => users.id, { onDelete: "cascade" }),
+  id: text("id").notNull().primaryKey(),
+  schoolId: text("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
+  usersId: text("users_id").references(() => users.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 160 }).notNull(),
   body: text("body").notNull(),
   sendTo: varchar("send_to", { length: 40 }).notNull(),
@@ -277,9 +277,9 @@ export const notificationsRelations = relations(notificationsTable, ({ one, many
 }));
 
 export const notificationFilesTable = pgTable("notification_files", {
-  id: uuid("id").notNull().primaryKey(),
-  notificationId: uuid("notification_id").notNull().references(() => notificationsTable.id, { onDelete: "cascade" }),
-  fileId: uuid("file_id").references(() => filesTable.id, { onDelete: "cascade" }),
+  id: text("id").notNull().primaryKey(),
+  notificationId: text("notification_id").notNull().references(() => notificationsTable.id, { onDelete: "cascade" }),
+  fileId: text("file_id").references(() => filesTable.id, { onDelete: "cascade" }),
 });
 
 export const notificationFilesRelations = relations(notificationFilesTable, ({ one }) => ({

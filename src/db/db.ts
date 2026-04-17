@@ -7,7 +7,7 @@ import { seed } from "drizzle-seed";
 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
-const sql = new Pool({ connectionString: process.env.DATABASE_URL! });
+const sql = new Pool({ connectionString: process.env.DATABASE_URL });
 
 export type Database = NodePgDatabase<typeof schema>
 export const db: Database = drizzle({
@@ -15,5 +15,4 @@ export const db: Database = drizzle({
     schema: { ...schema },
 });
 
-await seed(db, schema, { count: 100 });
-
+// await seed(db, schema, { count: 100 });
