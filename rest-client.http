@@ -1,0 +1,42 @@
+@baseUrl = http://localhost:8888
+
+### Register User
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Jane Student",
+  "schoolName": "Green Valley High",
+  "email": "jane.student@example.com",
+  "password": "password123",
+  "confirmPassword": "password123",
+  "rememberMe": false,
+  "callbackURL": "http://localhost:3000/dashboard"
+}
+
+### Login User
+
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "jane.student@example.com",
+  "password": "password123",
+  "rememberMe": false,
+  "role" : "admin",
+  "callbackURL": "http://localhost:3000/dashboard"
+}
+
+
+
+
+
+
+### Refresh Access Token
+# Uses refreshToken cookie set by login/register.
+POST {{baseUrl}}/auth/refresh
+
+
+### Sign Out
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJNSHRqQTQ3Z3lXbTdKdFY0Y1Q5SVNoU0F3ZDEyUGtxRCIsInNpZCI6InY3bE03T2NFUzBLUHJVcHd1WDRkQXEyVDVYakdCejlGIiwiaWF0IjoxNzc2NDQwMTA1LCJleHAiOjE3NzY0NDEwMDV9.zDGLC3QxOkyAsEGR5EanKsvJq5FDnQXiV3WNUvUE6rw

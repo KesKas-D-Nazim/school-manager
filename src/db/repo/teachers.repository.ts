@@ -57,7 +57,7 @@ class TeacherRepository implements ITeachersRepository {
         db
           .select({ id: users.id })
           .from(users)
-          .where(like(users.username, `%${searchValue}%`)),
+          .where(like(users.name, `%${searchValue}%`)),
       )
       : undefined;
 

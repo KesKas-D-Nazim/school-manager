@@ -2,7 +2,7 @@ import { text, uuid, pgTable, pgEnum, timestamp, integer, varchar, boolean, inde
 import { relations } from "drizzle-orm";
 
 // * enums : 
-export const roleEnum = pgEnum("role", ["student", "teacher", "owner"]);
+export const roleEnum = pgEnum("role", ["student", "teacher", "admin"]);
 export const statusEnum = pgEnum("status", ["Active", "Inactive", "Pending", "New"]);
 
 export const users = pgTable("users", {
@@ -10,9 +10,7 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
-  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
-  username: varchar("username", { length: 50 }).notNull(),
-  displayUsername: text("display_username"),
+  name: varchar("name", { length: 50 }).notNull(),
   telNumber: varchar("tel_number", { length: 20 }),
   role: roleEnum("role").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -41,8 +39,8 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 }));
 
 export const adminsTable = pgTable("admins", {
-  id: uuid("school_id").notNull().primaryKey(),
-  userId: uuid("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  id: uuid("school_id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
   schoolName: varchar("school_name", { length: 120 }).notNull(),
   numberStudents: integer("number_students").notNull().default(0),
   numberTeachers: integer("number_teachers").notNull().default(0),
@@ -63,7 +61,7 @@ export const adminsRelations = relations(adminsTable, ({ one }) => ({
 export const studentsTable = pgTable("students", {
   id: uuid("id").notNull().primaryKey(),
   schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
-  userId: uuid("user_id").unique().references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").unique().references(() => users.id, { onDelete: "cascade" }),
   grade: varchar("grade", { length: 20 }),
   classe: varchar("classe", { length: 40 }),
   parentPhoneNumber: varchar("parent_phone_number", { length: 20 }),
@@ -90,7 +88,7 @@ export const studentsRelations = relations(studentsTable, ({ one, many }) => ({
 export const teachersTable = pgTable("teachers", {
   id: uuid("id").notNull().primaryKey(),
   schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
-  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
   gender: varchar("gender", { length: 20 }),
   telNumber: varchar("number", { length: 20 }),
   address: text("address"),
@@ -261,7 +259,7 @@ export const assignmentFilesRelations = relations(assignmentFilesTable, ({ one }
 export const notificationsTable = pgTable("notifications", {
   id: uuid("id").notNull().primaryKey(),
   schoolId: uuid("school_id").notNull().references(() => adminsTable.id, { onDelete: "cascade" }),
-  usersId: uuid("users_id").references(() => users.id, { onDelete: "cascade" }),
+  usersId: text("users_id").references(() => users.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 160 }).notNull(),
   body: text("body").notNull(),
   sendTo: varchar("send_to", { length: 40 }).notNull(),

@@ -15,5 +15,5 @@ export const db: Database = drizzle({
     schema: { ...schema },
 });
 
-await seed(db, schema, { count: 100 });
+// await seed(db, schema, { count: 100 });
 

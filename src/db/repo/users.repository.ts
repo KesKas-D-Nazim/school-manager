@@ -24,7 +24,7 @@ export async function findUserByUsername(
   username: string,
 ): Promise<User | undefined> {
   return db.query.users.findFirst({
-    where: eq(users.username, username),
+    where: eq(users.name, username),
   });
 }
 
