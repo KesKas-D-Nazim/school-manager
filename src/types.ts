@@ -1,45 +1,100 @@
-import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
-import type { LibSQLDatabase } from "drizzle-orm/libsql";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import type * as schema from "./db/schema.js";
+import type * as schema from "./db/schemas.ts";
+import z from "zod";
 
-export type Db = LibSQLDatabase<typeof schema>;
+export type Db = NodePgDatabase<typeof schema>;
 
-export type User = InferSelectModel<typeof schema.users>;
-export type NewUser = InferInsertModel<typeof schema.users>;
+export type User = typeof schema.users.$inferSelect;
+export type NewUser = typeof schema.users.$inferInsert;
 
-export type Student = InferSelectModel<typeof schema.students>;
-export type NewStudent = InferInsertModel<typeof schema.students>;
+export type Student = typeof schema.studentsTable.$inferSelect;
+export type NewStudent = typeof schema.studentsTable.$inferInsert;
 
-export type Teacher = InferSelectModel<typeof schema.teachers>;
-export type NewTeacher = InferInsertModel<typeof schema.teachers>;
+export type Teacher = typeof schema.teachersTable.$inferSelect;
+export type NewTeacher = typeof schema.teachersTable.$inferInsert;
 
-export type Course = InferSelectModel<typeof schema.courses>;
-export type NewCourse = InferInsertModel<typeof schema.courses>;
+export type Course = typeof schema.coursesTable.$inferSelect;
+export type NewCourse = typeof schema.coursesTable.$inferInsert;
 
-export type Enrollment = InferSelectModel<typeof schema.enrollments>;
-export type NewEnrollment = InferInsertModel<typeof schema.enrollments>;
+export type Enrollment = typeof schema.enrollmentsTable.$inferSelect;
+export type NewEnrollment = typeof schema.enrollmentsTable.$inferInsert;
 
-export type Reference = InferSelectModel<typeof schema.references>;
-export type NewReference = InferInsertModel<typeof schema.references>;
+export type Reference = typeof schema.referencesTable.$inferSelect;
+export type NewReference = typeof schema.referencesTable.$inferInsert;
 
-export type File = InferSelectModel<typeof schema.files>;
-export type NewFile = InferInsertModel<typeof schema.files>;
+export type File = typeof schema.filesTable.$inferSelect;
+export type NewFile = typeof schema.filesTable.$inferInsert;
 
-export type Event = InferSelectModel<typeof schema.events>;
-export type NewEvent = InferInsertModel<typeof schema.events>;
+export type Event = typeof schema.eventsTable.$inferSelect;
+export type NewEvent = typeof schema.eventsTable.$inferInsert;
 
-export type Assignment = InferSelectModel<typeof schema.assignments>;
-export type NewAssignment = InferInsertModel<typeof schema.assignments>;
+export type Assignment = typeof schema.assignmentsTable.$inferSelect;
+export type NewAssignment = typeof schema.assignmentsTable.$inferInsert;
 
-export type CourseFile = InferSelectModel<typeof schema.courseFiles>;
-export type NewCourseFile = InferInsertModel<typeof schema.courseFiles>;
+export type CourseFile = typeof schema.courseFilesTable.$inferSelect;
+export type NewCourseFile = typeof schema.courseFilesTable.$inferInsert;
 
-export type AssignmentFile = InferSelectModel<typeof schema.assignmentFiles>;
-export type NewAssignmentFile = InferInsertModel<typeof schema.assignmentFiles>;
+export type AssignmentFile = typeof schema.assignmentFilesTable.$inferSelect;
+export type NewAssignmentFile = typeof schema.assignmentFilesTable.$inferInsert;
 
-export type Notification = InferSelectModel<typeof schema.notifications>;
-export type NewNotification = InferInsertModel<typeof schema.notifications>;
+export type Notification = typeof schema.notificationsTable.$inferSelect;
+export type NewNotification = typeof schema.notificationsTable.$inferInsert;
 
-export type NotificationFile = InferSelectModel<typeof schema.notificationFiles>;
-export type NewNotificationFile = InferInsertModel<typeof schema.notificationFiles>;
+export type NotificationFile = typeof schema.notificationFilesTable.$inferSelect;
+export type NewNotificationFile = typeof schema.notificationFilesTable.$inferInsert;
+
+
+// this is ayoub code i know it needs some changes but it's first step 
+// those are essential for returning the status code of the response 
+
+
+// export type successResponse<T> = {
+//     success: true;
+//     data: T;
+// };
+
+// export type errorResponse = {
+//     success: false;
+//     error: string;
+// };
+
+// export type ApiResponse<T> = successResponse<T> | errorResponse;
+
+// export type PaginatedSuccessResponse<T> = successResponse<T> & {
+//     pagination: {
+//         page: number;
+//         pageSize: number;
+//     };
+// };
+
+// export type PaginatedApiResponse<T> = PaginatedSuccessResponse<T> | errorResponse;
+
+export const searchSchema = z.object({
+    search: z.string().optional(),
+    page: z.string().optional(),
+    limit: z.string().optional(),
+});
+
+export type SearchSchema = z.infer<typeof searchSchema>;
+
+export const userSearchSchema = z.object({
+    search: z.string().optional().default(""),
+    page: z.number().int().optional().default(1),
+    size: z.number().int().optional().default(10),
+    sortBy: z.enum(['name', 'email']).default('name'),
+    sortOrder: z.enum(['asc', 'desc']).nullable().default('asc')
+});
+
+export const studentSearchSchema = userSearchSchema.extend({
+    grade: z.string().optional(),
+    status: z.string()
+});
+
+export const teacherSearchSchema = userSearchSchema.extend({
+    subject: z.string().optional(),
+});
+
+export type UserSearchSchema = z.infer<typeof userSearchSchema>;
+export type StudentSearchSchema = z.infer<typeof studentSearchSchema>;
+export type TeacherSearchSchema = z.infer<typeof teacherSearchSchema>;
