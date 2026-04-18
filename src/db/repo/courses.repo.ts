@@ -12,6 +12,32 @@ export async function createCourse(data: NewCourse): Promise<Course> {
 export async function findCourseById(id: number): Promise<Course | undefined> {
   return db.query.courses.findFirst({
     where: eq(courses.id, id),
+    with: {
+      teacher: { with: { user: true } },
+      files: { with: { file: true } },
+      assignments: true,
+      references: true,
+    },
+  });
+}
+
+export async function findCourseByName(name: string) {
+  return db.query.courses.findFirst({
+    where: eq(courses.name, name),
+    with: {
+      teacher: { with: { user: true } },
+      files: { with: { file: true } },
+      assignments: true,
+      references: true,
+    },
+  });
+}
+
+export async function listAllCourses() {
+  return db.query.courses.findMany({
+    with: {
+      teacher: { with: { user: true } },
+    },
   });
 }
 

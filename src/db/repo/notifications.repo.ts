@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, like } from "drizzle-orm";
 
 import { db } from "../db.js";
 import { notifications } from "../schema.js";
@@ -24,5 +24,14 @@ export async function listNotificationsByUserId(
 ): Promise<Notification[]> {
   return db.query.notifications.findMany({
     where: eq(notifications.usersId, userId),
+  });
+}
+
+export async function listNotificationsForStudent(classe: string) {
+  return db.query.notifications.findMany({
+    where: like(notifications.sendTo, `%${classe}%`),
+    with: {
+      files: { with: { file: true } },
+    },
   });
 }
