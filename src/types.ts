@@ -9,40 +9,40 @@ export type User = typeof schema.users.$inferSelect;
 export type NewUser = typeof schema.users.$inferInsert;
 
 export type Student = typeof schema.studentsTable.$inferSelect;
-export type NewStudent = typeof schema.studentsTable.$inferInsert;
+export type NewStudent = Omit<typeof schema.studentsTable.$inferInsert, "id"> & { id?: string };
 
 export type Teacher = typeof schema.teachersTable.$inferSelect;
-export type NewTeacher = typeof schema.teachersTable.$inferInsert;
+export type NewTeacher = Omit<typeof schema.teachersTable.$inferInsert, "id"> & { id?: string };
 
 export type Course = typeof schema.coursesTable.$inferSelect;
-export type NewCourse = typeof schema.coursesTable.$inferInsert;
+export type NewCourse = Omit<typeof schema.coursesTable.$inferInsert, "id"> & { id?: string };
 
 export type Enrollment = typeof schema.enrollmentsTable.$inferSelect;
-export type NewEnrollment = typeof schema.enrollmentsTable.$inferInsert;
+export type NewEnrollment = Omit<typeof schema.enrollmentsTable.$inferInsert, "id"> & { id?: string };
 
 export type Reference = typeof schema.referencesTable.$inferSelect;
-export type NewReference = typeof schema.referencesTable.$inferInsert;
+export type NewReference = Omit<typeof schema.referencesTable.$inferInsert, "id"> & { id?: string };
 
 export type File = typeof schema.filesTable.$inferSelect;
-export type NewFile = typeof schema.filesTable.$inferInsert;
+export type NewFile = Omit<typeof schema.filesTable.$inferInsert, "id"> & { id?: string };
 
 export type Event = typeof schema.eventsTable.$inferSelect;
-export type NewEvent = typeof schema.eventsTable.$inferInsert;
+export type NewEvent = Omit<typeof schema.eventsTable.$inferInsert, "id"> & { id?: string };
 
 export type Assignment = typeof schema.assignmentsTable.$inferSelect;
-export type NewAssignment = typeof schema.assignmentsTable.$inferInsert;
+export type NewAssignment = Omit<typeof schema.assignmentsTable.$inferInsert, "id"> & { id?: string };
 
 export type CourseFile = typeof schema.courseFilesTable.$inferSelect;
-export type NewCourseFile = typeof schema.courseFilesTable.$inferInsert;
+export type NewCourseFile = Omit<typeof schema.courseFilesTable.$inferInsert, "id"> & { id?: string };
 
 export type AssignmentFile = typeof schema.assignmentFilesTable.$inferSelect;
-export type NewAssignmentFile = typeof schema.assignmentFilesTable.$inferInsert;
+export type NewAssignmentFile = Omit<typeof schema.assignmentFilesTable.$inferInsert, "id"> & { id?: string };
 
 export type Notification = typeof schema.notificationsTable.$inferSelect;
-export type NewNotification = typeof schema.notificationsTable.$inferInsert;
+export type NewNotification = Omit<typeof schema.notificationsTable.$inferInsert, "id"> & { id?: string };
 
 export type NotificationFile = typeof schema.notificationFilesTable.$inferSelect;
-export type NewNotificationFile = typeof schema.notificationFilesTable.$inferInsert;
+export type NewNotificationFile = Omit<typeof schema.notificationFilesTable.$inferInsert, "id"> & { id?: string };
 
 
 // this is ayoub code i know it needs some changes but it's first step 
