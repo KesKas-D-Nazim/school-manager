@@ -5,7 +5,7 @@ import { cors } from 'hono/cors'
 import authRouter from "./modules/auth/auth.router.ts";
 import { db } from "./db/db.ts";
 //import { adminRouter } from "./modules/admin/admin.router.ts";
-//import { studentsRouter } from "./modules/students/students.router.ts";
+import studentsRouter from "./modules/students/students.router.ts";
 import { teachersRouter } from "./modules/teachers/teachers.router.ts";
 import { authMiddleware } from "./middleware/authMiddleware.ts";
 import { auth} from "./utils/auth.ts";
@@ -13,7 +13,7 @@ import { auth} from "./utils/auth.ts";
 const app = new Hono();
 
 app.use('*', cors())
-app.use("/api/**", authMiddleware)
+app.use("/api/*", authMiddleware)
 app.use("/auth/logout", authMiddleware) 
 
 app
@@ -29,7 +29,7 @@ app.on(["POST", "GET"], "/better-auth/**", async (c) => {
 });
 
 //app.route("/api/admin", adminRouter);
-//app.route("/api/students", studentsRouter);
+app.route("/api/students", studentsRouter);
 app.route("/api/teachers", teachersRouter);
 
 app.notFound((c) => {
