@@ -1,5 +1,7 @@
-import { Student, User } from "../../types"
+import type { InferSelectModel } from "drizzle-orm";
 
-export type StudentWithUser = Student & {
-    user: User | null
-}
+import { studentsTable, users } from "../../db/schemas";
+
+export type StudentWithUser = InferSelectModel<typeof studentsTable> & {
+	user: InferSelectModel<typeof users> | null;
+};
