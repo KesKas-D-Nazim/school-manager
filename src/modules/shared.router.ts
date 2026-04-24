@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import * as studentController from './student/student.controller.ts';
 import { authMiddleware } from "../middleware/authMiddleware";
+import * as teacherController from "./teacherInterface/teacher.controller.ts";
 
 const sharedRouter = new Hono();
 
@@ -20,6 +21,7 @@ sharedRouter.get("/events", (c: any) => {
     const user = c.get("user");
 
     if (user.role === "student") return studentController.getEvents(c);
+    if (user.role === "teacher") return teacherController.getEvents(c);
 })
 
 sharedRouter.get("/notifications", (c: any) => {
