@@ -5,15 +5,22 @@ import { cors } from 'hono/cors'
 import authRouter from "./modules/auth/auth.router.ts";
 import { db } from "./db/db.ts";
 //import { adminRouter } from "./modules/admin/admin.router.ts";
-//import { studentsRouter } from "./modules/students/students.router.ts";
+import studentRouter from "./modules/student/student.router.ts";
 import { teachersRouter } from "./modules/teachers/teachers.router.ts";
 import { authMiddleware } from "./middleware/authMiddleware.ts";
 import { auth} from "./utils/auth.ts";
 
+import sharedRouter from "./modules/shared.router.ts"; 
+
 const app = new Hono();
 
-app.use('*', cors())
-app.use("/api/**", authMiddleware)
+app.use('*', cors({
+    origin: ['http://localhost:3000'],
+    allowHeaders: ['Authorization', 'Content-Type'],
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true,
+}))
+app.use("/api/*", authMiddleware)
 app.use("/auth/logout", authMiddleware) 
 
 app
@@ -29,8 +36,10 @@ app.on(["POST", "GET"], "/better-auth/**", async (c) => {
 });
 
 //app.route("/api/admin", adminRouter);
-//app.route("/api/students", studentsRouter);
+app.route("/student", studentRouter);
 app.route("/api/teachers", teachersRouter);
+
+app.route("/", sharedRouter);
 
 app.notFound((c) => {
   return c.json({ message: "Not Found" }, 404)
