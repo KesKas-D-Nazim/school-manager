@@ -20,14 +20,6 @@ sharedRouter.get("/collections", (c: any) => {
     return c.json({ message: "Forbidden"}, 403);
 });
 
-sharedRouter.get("/events", (c: any) => {
-    const user = c.get("user");
-
-    if (user.role === "student") return studentController.getEvents(c);
-    if (user.role === "teacher") return teacherController.getEvents(c);
-    if (user.role === "admin") return adminController.getEvents(c);
-})
-
 sharedRouter.get("/teachers", (c: any) => {
   const user = c.get("user");
   if (user.role === "admin") return teachersController.listTeachers(c);
@@ -40,9 +32,29 @@ sharedRouter.get("/students", (c: any) => {
   return c.json({ message: "Forbidden" }, 403);
 })
 
+sharedRouter.get("/events", (c: any) => {
+    const user = c.get("user");
+
+    if (user.role === "student") return studentController.getEvents(c);
+    if (user.role === "teacher") return teacherController.getEvents(c);
+    if (user.role === "admin") return adminController.getEvents(c);
+})
+
 sharedRouter.post("/events", (c: any) => {
   const user = c.get("user");
   if (user.role === "admin") return adminController.postEvent(c);
+  return c.json({ message: "Forbidden" }, 403);
+});
+
+sharedRouter.delete("/events/:id", (c: any) => {
+  const user = c.get("user");
+  if (user.role === "admin") return adminController.deleteEvent(c);
+  return c.json({ message: "Forbidden" }, 403);
+});
+
+sharedRouter.patch("/events/:id", (c: any) => {
+  const user = c.get("user");
+  if (user.role === "admin") return adminController.editEvent(c);
   return c.json({ message: "Forbidden" }, 403);
 });
 

@@ -99,3 +99,54 @@ export const postEvent = async (c: any) => {
     return c.json({ error: "Failed to create event" }, 500);
   }
 };
+
+export const editEvent = async (c: any) => {
+  try {
+    const id = c.req.param("id");
+    const body = await c.req.json();
+
+    let teacherId = null;
+    if (body.isClass && body.teacherName) {
+      const teacher = await db
+        .select({ id: teachersTable.id })
+        .from(teachersTable)
+        .leftJoin(users, eq(teachersTable.userId, users.id))
+        .where(eq(users.name, body.teacherName))
+        .limit(1);
+      teacherId = teacher[0]?.id ?? null;
+    }
+
+    await db.update(eventsTable)
+      .set({
+        title: body.title,
+        description: body.description ?? null,
+        date: new Date(body.start),
+        endDate: new Date(body.end),
+        color: body.color ?? null,
+        allDay: body.allDay ?? false,
+        repeatWeekly: body.repeatWeekly ?? false,
+        isClass: body.isClass ?? false,
+        className: body.className ?? null,
+        teacherId: teacherId,
+      })
+      .where(eq(eventsTable.id, id));
+
+    return c.json({ message: "Event updated" }, 200);
+  } catch (err) {
+    console.log(err);
+    return c.json({ error: "Failed to update event" }, 500);
+  }
+};
+
+export const deleteEvent = async (c: any) => {
+  try {
+    const id = c.req.param("id");
+
+    await db.delete(eventsTable).where(eq(eventsTable.id, id));
+
+    return c.json({ message: "Event deleted" }, 200);
+  } catch (err) {
+    console.log(err);
+    return c.json({ error: "Failed to delete event" }, 500);
+  }
+};
