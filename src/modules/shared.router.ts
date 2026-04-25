@@ -5,6 +5,8 @@ import * as teacherController from "./teacherInterface/teacher.controller.ts";
 import * as adminController from "./admin/admin.controller.ts"
 import { teachersController } from "./teachers/teachers.controller.ts"
 import { studentsController } from "./students/students.controller.ts"
+import { notificationsRouter } from "./notifications/notifications.router.ts"
+
 
 const sharedRouter = new Hono();
 
@@ -57,10 +59,6 @@ sharedRouter.patch("/events/:id", (c: any) => {
   if (user.role === "admin") return adminController.editEvent(c);
   return c.json({ message: "Forbidden" }, 403);
 });
-
-sharedRouter.get("/notifications", (c: any) => {
-    return c.json([]);
-})
 
 sharedRouter.get("/resources", (c: any) => {
     return c.json([]);

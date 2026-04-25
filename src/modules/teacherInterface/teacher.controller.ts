@@ -1,6 +1,6 @@
 import { db } from "../../db/db";
 import { coursesTable, notificationsTable, studentsTable, enrollmentsTable, teachersTable, users, eventsTable } from "../../db/schemas";
-import { eq, and, gte, lte } from "drizzle-orm";
+import { eq, and, or, gte, lte } from "drizzle-orm";
 
 export const getCourses = async (c: any) => {
   try {
@@ -47,7 +47,10 @@ export const getEvents = async (c: any) => {
       .where(
         and(
           eq(eventsTable.schoolId, schoolId),
-          eq(eventsTable.teacherId, teacherId),
+          or(
+            eq(eventsTable.teacherId, teacherId),
+            eq(eventsTable.isClass, false)
+          ),
           startDate ? gte(eventsTable.date, new Date(startDate)) : undefined,
           endDate ? lte(eventsTable.date, new Date(endDate)) : undefined,
         )

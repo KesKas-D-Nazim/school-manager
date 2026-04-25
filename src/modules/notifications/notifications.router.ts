@@ -5,9 +5,11 @@ import { createNotificationSchema } from "./notifications.schema";
 
 export const notificationsRouter = new Hono()
   .get("/", notificationsController.listNotifications)
+  .get("/:id", notificationsController.getNotification)
   .post(
     "/",
     zValidator("json", createNotificationSchema),
     notificationsController.createNotification,
   )
+  .patch("/:id", notificationsController.markAsRead) 
   .delete("/:id", notificationsController.deleteNotification);

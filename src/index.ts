@@ -11,6 +11,7 @@ import { authMiddleware } from "./middleware/authMiddleware.ts";
 import { auth} from "./utils/auth.ts";
 
 import sharedRouter from "./modules/shared.router.ts"; 
+import { notificationsRouter } from "./modules/notifications/notifications.router.ts";
 
 const app = new Hono();
 
@@ -40,6 +41,8 @@ app.route("/student", studentRouter);
 app.route("/api/teachers", teachersRouter);
 
 app.route("/", sharedRouter);
+
+app.route("/notifications", notificationsRouter)
 
 app.notFound((c) => {
   return c.json({ message: "Not Found" }, 404)

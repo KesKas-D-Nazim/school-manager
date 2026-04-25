@@ -269,6 +269,8 @@ export const notificationsTable = pgTable("notifications", {
   title: varchar("title", { length: 160 }).notNull(),
   body: text("body").notNull(),
   sendTo: varchar("send_to", { length: 40 }).notNull(),
+  type: text("type", { enum: ["Teacher", "Urgent", "Administrative", "User", "Grade", "Book"] }),  
+  read: boolean("read").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -1,6 +1,9 @@
 import { Context } from "hono";
 import { notificationsRepository } from "../../db/repo/index.ts";
 import type { CreateNotificationBody } from "./notifications.schema.ts";
+import { db } from "../../db/db.ts";
+import { notificationsTable } from "../../db/schemas.ts";
+import { eq } from "drizzle-orm";
 
 type AuthUser = {
   id?: string;
@@ -49,7 +52,15 @@ class NotificationsController {
       return c.json({ success: false, message: "Forbidden" }, 403);
     }
 
-    return c.json({ success: true, data }, 200);
+      const notifications = Array.isArray(data) ? data : data.data;
+
+      return c.json(notifications.map((n: any) => ({
+        id: n.id,
+        type: n.type ?? "General",
+        title: n.title,
+        message: n.body,
+        time: n.createdAt,
+      })), 200);
   }
 
   async createNotification(c: Context) {
@@ -77,7 +88,10 @@ class NotificationsController {
         id: crypto.randomUUID(),
         schoolId,
         usersId: user.id,
-        ...body,
+        title: body.subject,
+        body: body.content,
+        sendTo: body.sendTo.join(","),
+        type: body.type as "Teacher" | "Urgent" | "Administrative" | "User" | "Grade" | "Book",
       });
 
       return c.json({ success: true, data: notification }, 201);
@@ -117,6 +131,43 @@ class NotificationsController {
 
     return c.json({ success: true, message: "Notification deleted" }, 200);
   }
+
+  async getNotification(c: Context) {
+    const id = c.req.param("id");
+    
+    if (!id) {
+      return c.json({ success: false, message: "Invalid id" }, 400);
+    }
+
+    const notification = await notificationsRepository.findNotificationById(id);
+
+    if (!notification) {
+      return c.json({ success: false, message: "Notification not found" }, 404);
+    }
+
+    return c.json({
+      id: notification.id,
+      type: notification.type ?? "General",
+      subject: notification.title,
+      content: notification.body,
+      time: notification.createdAt,
+    }, 200);
+  }
+
+  async markAsRead(c: Context) {
+    const id = c.req.param("id");
+
+    if (!id) {
+      return c.json({ success: false, message: "Invalid id" }, 400);
+    }
+
+
+    await db.update(notificationsTable)
+      .set({ read: true })
+      .where(eq(notificationsTable.id, id));
+    return c.json({ success: true, message: "Marked as read" }, 200);
+}
+
 }
 
 export const notificationsController = new NotificationsController();

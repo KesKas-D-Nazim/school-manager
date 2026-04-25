@@ -1,4 +1,4 @@
-import { and, eq, like, sql } from "drizzle-orm";
+import { and, eq, ilike, sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 
 import { db, type Database } from "../db.js";
@@ -115,7 +115,7 @@ class NotificationsRepository implements INotificationsRepository {
   ): Promise<NotificationWithRelations[]> {
     return this.db.query.notificationsTable.findMany({
       where: and(
-        like(notificationsTable.sendTo, `%${classe}%`),
+        ilike(notificationsTable.sendTo, `%students%`),
         eq(notificationsTable.schoolId, schoolId),
       ),
       with: {
