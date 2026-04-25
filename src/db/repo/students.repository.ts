@@ -17,7 +17,10 @@ class StudentsRepository implements IStudentsRepository {
   constructor(private readonly db: Database) { }
 
   async createStudent(data: NewStudent): Promise<Student> {
-    const [row] = await this.db.insert(studentsTable).values(data).returning();
+    const [row] = await this.db.insert(studentsTable).values({
+        ...data,
+        id: data.id ?? crypto.randomUUID(),
+    }).returning();
     return row;
   }
 
@@ -44,7 +47,8 @@ class StudentsRepository implements IStudentsRepository {
     sortBy,
     sortOrder,
     grade,
-    status
+    status,
+    schoolId
   }: StudentSearchSchema
   ) {
     const offset = (page - 1) * size;

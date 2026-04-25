@@ -17,7 +17,7 @@ type AuthUser = {
 class StudentsController {
 	async listStudents(c: Context) {
 		const user = c.get("user") as AuthUser | undefined;
-		const schoolId =
+		const schoolId = 
 			user?.role === "student" ? user?.info?.schoolId : user?.info?.id;
 
 		if (!schoolId) {
@@ -32,8 +32,29 @@ class StudentsController {
 			schoolId,
 		});
 
-		return c.json({ success: true, data, pagination }, 200);
-	}
+		return c.json({ 
+			success: true, 
+			data: data.map((s: any) => ({
+				id: s.id,
+				name: s.user?.name,
+				email: s.user?.email,
+				grade: s.grade,
+				classe: s.classe,
+				parentPhoneNumber: s.parentPhoneNumber,
+				parentName: s.parentName,
+				status: s.status,
+				gender: s.gender,
+				address: s.address,
+				dateOfBirth: s.dateOfBirth,
+				enrollmentDate: s.createdAt,
+				imgSrc: "",
+				//schoolId: s.schoolId,
+			})),
+			pagination: {
+				totalPages: pagination.totalPages,
+				totalElements: pagination.totalCount,
+			}
+		}, 200);	}
 
 	async getStudent(c: Context) {
 		const id = c.req.param("id")!;

@@ -36,7 +36,7 @@ sharedRouter.get("/teachers", (c: any) => {
 
 sharedRouter.get("/students", (c: any) => {
     const user = c.get("user");
-      if (user.role === "admin") return studentsController.listTeachers(c);
+      if (user.role === "admin") return studentsController.listStudents(c);
   return c.json({ message: "Forbidden" }, 403);
 })
 

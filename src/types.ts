@@ -88,7 +88,8 @@ export const userSearchSchema = z.object({
 
 export const studentSearchSchema = userSearchSchema.extend({
     grade: z.string().optional(),
-    status: z.string()
+    status: z.string(),
+    schoolId: z.string().optional()
 });
 
 export const teacherSearchSchema = userSearchSchema.extend({
