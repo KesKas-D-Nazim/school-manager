@@ -1,16 +1,101 @@
-import { ITeachersRepository, teachersRepository } from "../../db/repo/index.ts";
-import { TeacherSearchSchema } from "../../types.ts";
+import { db }from "../../db/db";
+import { eventsTable, teachersTable, users } from "../../db/schemas"
+import { eq, and, gte, lte } from "drizzle-orm"
 
+export const getEvents = async (c: any) => {
+  try {
+    const user = c.get("user");
+    const schoolId = user.info.id;
+    const { startDate, endDate } = c.req.query();
 
-class AdminController {
-    constructor(private readonly teachersRepository: ITeachersRepository) { }
+    const events = await db
+      .select({
+        id: eventsTable.id,
+        title: eventsTable.title,
+        start: eventsTable.date,
+        end: eventsTable.endDate,
+        description: eventsTable.description,
+        className: eventsTable.className,
+        teacherName: users.name,
+        color: eventsTable.color,
+        allDay: eventsTable.allDay,
+        repeatWeekly: eventsTable.repeatWeekly,
+        isClass: eventsTable.isClass,
+      })
+      .from(eventsTable)
+      .leftJoin(teachersTable, eq(eventsTable.teacherId, teachersTable.id))
+      .leftJoin(users, eq(teachersTable.userId, users.id))
+      .where(
+        and(
+          eq(eventsTable.schoolId, schoolId),
+          startDate ? gte(eventsTable.date, new Date(startDate)) : undefined,
+          endDate ? lte(eventsTable.date, new Date(endDate)) : undefined,
+     )
+    );
 
-    async listTeachers(search_queries: TeacherSearchSchema, schoolId: string) {
-        return await this.teachersRepository.listTeachers({
-            ...search_queries,
-            schoolId,
-        });
+    const formatted = events.map(e => ({
+      id: e.id,
+      title: e.title,
+      start: e.start,
+      end: e.end ?? e.start,
+      color: e.color ?? "#3b82f6",
+      description: e.description ?? "",
+      allDay: e.allDay ?? false,
+      repeatWeekly: e.repeatWeekly ?? false,
+      isClass: e.isClass ?? false,
+      className: e.className ?? "",
+      teacherName: e.teacherName ?? "",
+    }));
+
+    return c.json(formatted);
+} catch (err) {
+    console.log(err);
+    return c.json({ error: "Failed to fetch events" }, 500);
+  }
+};
+
+export const postEvent = async (c: any) => {
+  try {
+    const user = c.get("user");
+    const schoolId = user.info.id; 
+
+    const body = await c.req.json();
+
+    let teacherId = null;
+    if (body.isClass && body.teacherName) {
+      const teacher = await db
+        .select({ id: teachersTable.id })
+        .from(teachersTable)
+        .leftJoin(users, eq(teachersTable.userId, users.id))
+        .where(
+          and(
+            eq(teachersTable.schoolId, schoolId),
+            eq(users.name, body.teacherName)
+          )
+        )
+        .limit(1);
+
+      teacherId = teacher[0]?.id ?? null;
     }
-}
 
-export const adminController = new AdminController(teachersRepository);
+    await db.insert(eventsTable).values({
+      id: crypto.randomUUID(),
+      schoolId,
+      title: body.title,
+      description: body.description ?? null,
+      date: new Date(body.start),
+      endDate: new Date(body.end),
+      color: body.color ?? null,
+      allDay: body.allDay ?? false,
+      repeatWeekly: body.repeatWeekly ?? false,
+      isClass: body.isClass ?? false,
+      className: body.className ?? null,
+      teacherId: teacherId,
+    });
+
+    return c.json({ message: "Event created" }, 201);
+  } catch (err) {
+    console.log(err);
+    return c.json({ error: "Failed to create event" }, 500);
+  }
+};

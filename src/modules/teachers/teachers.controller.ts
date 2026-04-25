@@ -32,7 +32,30 @@ class TeachersController {
 			schoolId,
 		});
 
-		return c.json({ success: true, data, pagination }, 200);
+		return c.json({ 
+			success: true, 
+			data: data.map(t => ({
+				id: t.id,
+				name: t.user?.name,        
+				email: t.user?.email,      
+				role: t.user?.role,        
+				gender: t.gender,
+				number: t.telNumber,       
+				address: t.address,
+				subjects: t.subjects ? t.subjects.split(",") : [], 
+				dateOfBirth: t.dateOfBirth,
+				joiningDate: t.joiningDate,
+				status: t.status,
+				schoolId: t.schoolId,
+				departement: "",           
+				imgSrc: "",                
+				password: "",              
+			})),
+			pagination: {
+				totalPages: pagination.totalPages,
+				totalElements: pagination.totalCount,
+			}
+		}, 200);
 	}
 
 	async getTeacher(c: Context) {
@@ -123,8 +146,12 @@ class TeachersController {
 	}
 
 	async deleteTeacher(c: Context) {
+		const user = c.get("user") as AuthUser | undefined;
+
 		const id = c.req.param("id")!;
 		const teacher = await teachersRepository.findTeacherById(id);
+		
+		const schoolId = user?.info?.id;
 
 		if (!teacher) {
 			return c.json({ success: false, message: "Teacher not found" }, 404);

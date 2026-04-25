@@ -2,31 +2,52 @@ import { db } from "../../db/db";
 import { coursesTable, notificationsTable, studentsTable, enrollmentsTable, teachersTable, users, eventsTable } from "../../db/schemas";
 import { eq, and, gte, lte } from "drizzle-orm";
 
+export const getCourses = async (c: any) => {
+  try {
+    const user = c.get("user");
+    const teacherId = user.info.id;
+
+    const courses = await db
+      .select()
+      .from(coursesTable)
+      .where(eq(coursesTable.teacherId, user.info.id)
+  );
+
+    return c.json(courses);
+  } catch (err) {
+    return c.json({ error: "Failed to fetch courses" }, 500);
+  }
+};
+
 export const getEvents = async (c: any) => {
   try {
     const user = c.get("user");
     const schoolId = user.info.schoolId;
-    const teacherId = user.info.id; // teacher's id from token
+    const teacherId = user.info.id;
     const { startDate, endDate } = c.req.query();
 
     const events = await db
       .select({
         id: eventsTable.id,
         title: eventsTable.title,
-        start: eventsTable.date,
+        start: eventsTable.date, 
+        endDate: eventsTable.endDate, 
         description: eventsTable.description,
-        type: eventsTable.type,
         className: eventsTable.className,
         teacherName: users.name,
+        color: eventsTable.color,
+        allDay: eventsTable.allDay,
+        repeatWeekly: eventsTable.repeatWeekly,
+        isClass: eventsTable.isClass,
       })
       .from(eventsTable)
       .leftJoin(coursesTable, eq(eventsTable.courseId, coursesTable.id))
-      .leftJoin(teachersTable, eq(coursesTable.teacherId, teachersTable.id))
+      .leftJoin(teachersTable, eq(eventsTable.teacherId, teachersTable.id))
       .leftJoin(users, eq(teachersTable.userId, users.id))
       .where(
         and(
           eq(eventsTable.schoolId, schoolId),
-          eq(coursesTable.teacherId, teacherId), // filter by teacher's courses
+          eq(eventsTable.teacherId, teacherId),
           startDate ? gte(eventsTable.date, new Date(startDate)) : undefined,
           endDate ? lte(eventsTable.date, new Date(endDate)) : undefined,
         )
@@ -36,15 +57,12 @@ export const getEvents = async (c: any) => {
       id: e.id,
       title: e.title,
       start: e.start,
-      end: e.start,
-      color: e.type === "exam" ? "#ef4444"
-           : e.type === "holiday" ? "#22c55e"
-           : e.type === "class" ? "#3b82f6"
-           : "#f59e0b",
+      end: e.endDate ?? e.start,           
+      color: e.color ?? "#3b82f6",      
       description: e.description ?? "",
-      allDay: e.type === "holiday",
-      repeatWeekly: e.type === "class",
-      isClass: e.type === "class",
+      allDay: e.allDay ?? false,
+      repeatWeekly: e.repeatWeekly ?? false,
+      isClass: e.isClass ?? false,
       className: e.className ?? "",
       teacherName: e.teacherName ?? "",
     }));

@@ -46,11 +46,15 @@ export const getEvents = async (c: any) => {
       .select({
         id: eventsTable.id,
         title: eventsTable.title,
-        start: eventsTable.date,  
+        start: eventsTable.date, 
+        endDate: eventsTable.endDate, 
         description: eventsTable.description,
-        type: eventsTable.type,
         className: eventsTable.className,
         teacherName: users.name,
+        color: eventsTable.color,
+        allDay: eventsTable.allDay,
+        repeatWeekly: eventsTable.repeatWeekly,
+        isClass: eventsTable.isClass,
       })
       .from(eventsTable)
       .leftJoin(coursesTable, eq(eventsTable.courseId, coursesTable.id))
@@ -69,15 +73,12 @@ export const getEvents = async (c: any) => {
       id: e.id,
       title: e.title,
       start: e.start,
-      end: e.start,           
-      color: e.type === "exam" ? "#ef4444" 
-           : e.type === "holiday" ? "#22c55e"
-           : e.type === "class" ? "#3b82f6"
-           : "#f59e0b",      
+      end: e.endDate ?? e.start,           
+      color: e.color ?? "#3b82f6",      
       description: e.description ?? "",
-      allDay: e.type === "holiday",
-      repeatWeekly: e.type === "class",
-      isClass: e.type === "class",
+      allDay: e.allDay ?? false,
+      repeatWeekly: e.repeatWeekly ?? false,
+      isClass: e.isClass ?? false,
       className: e.className ?? "",
       teacherName: e.teacherName ?? "",
     }));
