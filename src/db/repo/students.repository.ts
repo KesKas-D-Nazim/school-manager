@@ -1,14 +1,14 @@
 import { db, type Database } from "../db.ts";
 import { studentsTable, users } from "../schemas.ts";
 import type { NewStudent, Student, StudentSearchSchema } from "../../types.ts";
-import { and, eq, inArray, like, sql } from "drizzle-orm";
-import { StudentWithUser } from "../../modules/students/students.types.ts";
+import { eq, inArray, like, sql } from "drizzle-orm";
+import { StudentWithUser } from "../../modules/student/students.types.ts";
 
 export interface IStudentsRepository {
-  createStudent(data: NewStudent & { id: string }): Promise<Student>;
+  createStudent(data: NewStudent): Promise<Student>;
   findStudentById(id: string): Promise<StudentWithUser | undefined>;
   findStudentByUserId(userId: string): Promise<StudentWithUser | undefined>;
-  listStudents(search_queries: StudentSearchSchema & { schoolId: string }): Promise<{ data: StudentWithUser[]; pagination: { totalCount: number, totalPages: number } }>;
+  listStudents(search_queries: StudentSearchSchema): Promise<{ data: StudentWithUser[]; pagination: { totalCount: number, totalPages: number } }>;
   updateStudent(id: string, data: Partial<NewStudent>): Promise<Student | undefined>;
   deleteStudent(id: string): Promise<void>;
 }
@@ -16,7 +16,7 @@ export interface IStudentsRepository {
 class StudentsRepository implements IStudentsRepository {
   constructor(private readonly db: Database) { }
 
-  async createStudent(data: NewStudent & { id: string }): Promise<Student> {
+  async createStudent(data: NewStudent): Promise<Student> {
     const [row] = await this.db.insert(studentsTable).values(data).returning();
     return row;
   }
@@ -38,7 +38,6 @@ class StudentsRepository implements IStudentsRepository {
   }
 
   async listStudents({
-    schoolId,
     search,
     page,
     size,
@@ -46,40 +45,43 @@ class StudentsRepository implements IStudentsRepository {
     sortOrder,
     grade,
     status
-  }: StudentSearchSchema & { schoolId: string }
+  }: StudentSearchSchema
   ) {
-    const safePage = Math.max(1, page);
-    const safeLimit = Math.max(1, size);
-    const offset = (safePage - 1) * safeLimit;
+    const offset = (page - 1) * size;
     const searchValue = search?.trim();
 
     const whereClause = searchValue
-      ? and(
-        eq(studentsTable.schoolId, schoolId),
-        inArray(
-          studentsTable.userId,
-          this.db
-            .select({ id: users.id })
-            .from(users)
-            .where(like(users.name, `%${searchValue}%`)),
-        ),
+      ? inArray(
+        studentsTable.userId,
+        this.db
+          .select({ id: users.id })
+          .from(users)
+          .where(like(users.name, `%${searchValue}%`)),
       )
-      : eq(studentsTable.schoolId, schoolId);
+      : undefined;
 
-    const totalQuery = this.db
-      .select({ total: sql<number>`count(*)` })
-      .from(studentsTable)
-      .where(whereClause);
+    const totalQuery = whereClause
+      ? this.db
+        .select({ total: sql<number>`count(*)` })
+        .from(studentsTable)
+        .where(whereClause)
+      : this.db.select({ total: sql<number>`count(*)` }).from(studentsTable);
     const [totalRow] = await totalQuery;
     const totalCount = Number(totalRow?.total ?? 0);
-    const totalPages = Math.ceil(totalCount / safeLimit);
+    const totalPages = Math.ceil(totalCount / size);
 
-    const data = await this.db.query.studentsTable.findMany({
-      where: whereClause,
-      with: { user: true },
-      limit: safeLimit,
-      offset,
-    });
+    const data = whereClause
+      ? await this.db.query.studentsTable.findMany({
+        where: whereClause,
+        with: { user: true },
+        limit: size,
+        offset,
+      })
+      : await this.db.query.studentsTable.findMany({
+        with: { user: true },
+        limit: size,
+        offset,
+      });
 
     return { data, pagination: { totalCount, totalPages } };
   }

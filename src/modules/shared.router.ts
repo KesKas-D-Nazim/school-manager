@@ -4,7 +4,7 @@ import { authMiddleware } from "../middleware/authMiddleware";
 import * as teacherController from "./teacherInterface/teacher.controller.ts";
 import * as adminController from "./admin/admin.controller.ts"
 import { teachersController } from "./teachers/teachers.controller.ts"
-import { studetnsController } from "./students/students.controller.ts"
+import { studentsController } from "./students/students.controller.ts"
 
 const sharedRouter = new Hono();
 

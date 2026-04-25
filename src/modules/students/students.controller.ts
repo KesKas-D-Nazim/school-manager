@@ -1,17 +1,11 @@
-<<<<<<< HEAD
-=======
-import { db } from "../../db/db";
 import { coursesTable, notificationsTable, studentsTable, enrollmentsTable, teachersTable, users } from "../../db/schemas";
->>>>>>> ddf50faac520890ead948dcdfd8285bb11b1b0bb
 import { eq } from "drizzle-orm";
 import { Context } from "hono";
 import { db } from "../../db/db.ts";
 import { studentsRepository } from "../../db/repo/index.ts";
-import { users } from "../../db/schemas.ts";
 import { auth } from "../../utils/auth.ts";
 import type { CreateStudentBody, UpdateStudentBody } from "./students.schema.ts";
 
-<<<<<<< HEAD
 type AuthUser = {
 	role?: "admin" | "teacher" | "student";
 	info?: {
@@ -159,52 +153,3 @@ class StudentsController {
 }
 
 export const studentsController = new StudentsController();
-=======
-
-export const getCourses = async (c: any) => {
-  try {
-    const user = c.get("user");
-    // console.log("USER:", JSON.stringify(user, null, 2)); 
-    const studentId = user.info.id;
-
-    const courses = await db
-      .select({
-        id: coursesTable.id,
-        name: coursesTable.name,
-        description: coursesTable.description,
-        teacherName: users.name,
-        createdAt: coursesTable.createdAt,
-      })
-      .from(enrollmentsTable)
-      .innerJoin(coursesTable, eq(enrollmentsTable.courseId, coursesTable.id))
-      .leftJoin(teachersTable, eq(coursesTable.teacherId, teachersTable.id))
-      .leftJoin(users, eq(teachersTable.userId, users.id))      
-      .where(eq(enrollmentsTable.studentId, studentId));    
-
-  //   const courses = await db
-  //     .select()
-  //     .from(coursesTable)
-  //     .where(eq(coursesTable.schoolId, user.info.schoolId)
-  // );
-
-    return c.json({ courses });
-  } catch (err) {
-    return c.json({ error: "Failed to fetch courses" }, 500);
-  }
-};
-
-export const getNotifications = async (c: any) => {
-  try {
-    const student = c.get("user");
-
-    const notifications = await db
-      .select()
-      .from(notificationsTable)
-      .where(eq(notificationsTable.schoolId, student.schoolId));
-
-    return c.json({ notifications });
-  } catch (err) {
-    return c.json({ error: "Failed to fetch notifications "}, 500);
-  }
-}
->>>>>>> ddf50faac520890ead948dcdfd8285bb11b1b0bb
