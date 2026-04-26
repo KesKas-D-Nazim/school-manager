@@ -15,11 +15,9 @@ async function seed() {
     email: "admin@test.com",
     emailVerified: true,
     image: null,
-    passwordHash: "hashed_password",
-    username: "admin",
-    displayUsername: "Admin",
+    name: "Admin",
     telNumber: "0000000000",
-    role: "owner", // or "student" depending on your enum
+    role: "admin",
   });
 
   console.log("👤 User created");

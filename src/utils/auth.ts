@@ -4,6 +4,7 @@ import { bearer } from "better-auth/plugins/bearer";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "../db/db";
 import { sendVerificationEmail } from "../emails/sendEmail";
+import { handlePassword } from "./hash_password";
 
 const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:8888";
 const basePath = "/api/better-auth";
@@ -52,6 +53,10 @@ export const auth = betterAuth({
         },
     },
     emailAndPassword: {
+        password : {
+            hash : handlePassword.hash,
+            verify : ({ hash, password }) => handlePassword.verify(password, hash)
+        },
         enabled: true,
         requireEmailVerification: false,
         minPasswordLength: 8,

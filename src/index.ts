@@ -4,7 +4,7 @@ import { Hono } from "hono";
 import { cors } from 'hono/cors'
 import authRouter from "./modules/auth/auth.router.ts";
 import { db } from "./db/db.ts";
-//import { adminRouter } from "./modules/admin/admin.router.ts";
+import { adminRouter } from "./modules/admin/admin.router.ts";
 import studentsRouter from "./modules/students/students.router.ts";
 import { authMiddleware } from "./middlewares/authMiddleware.ts";
 import { auth} from "./utils/auth.ts";

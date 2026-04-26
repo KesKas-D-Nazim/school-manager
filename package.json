@@ -8,7 +8,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate ",
-    "db:studio": "drizzle-kit studio",
+    "db:studio": "drizzle-kit studio --port 4984",
     "send-email": "tsx src/utils/sendEmail.ts",
     "auth-docs": "open-cli http://localhost:8888/api/better-auth/reference"
   },
@@ -32,6 +32,7 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "resend": "^6.10.0",
+    "xlsx": "^0.18.5",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -42,6 +43,7 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/xlsx": "^0.0.36",
     "autoprefixer": "^10.4.27",
     "drizzle-kit": "^0.31.10",
     "postcss": "^8.5.9",

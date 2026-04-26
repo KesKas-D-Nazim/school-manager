@@ -98,3 +98,4 @@ export const teacherSearchSchema = userSearchSchema.extend({
 export type UserSearchSchema = z.infer<typeof userSearchSchema>;
 export type StudentSearchSchema = z.infer<typeof studentSearchSchema>;
 export type TeacherSearchSchema = z.infer<typeof teacherSearchSchema>;
+
