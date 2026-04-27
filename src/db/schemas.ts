@@ -188,9 +188,15 @@ export const eventsTable = pgTable("events", {
   }),
   title: varchar("title", { length: 160 }).notNull(),
   description: text("description"),
-  type: text("type", { enum: ["class", "exam", "event", "holiday"] }).notNull(),
+  //type: text("type", { enum: ["class", "exam", "event", "holiday"] }).notNull(),
   date: timestamp("date").notNull(),
+  endDate: timestamp("end_date"),
   className: varchar("class_name", { length: 80 }),
+  allDay: boolean("all_day").default(false),
+  isClass: boolean("is_class").default(false),
+  repeatWeekly: boolean("repeat_weekly").default(false),
+  teacherId: text("teacher_id").references(() => teachersTable.id, { onDelete: "set null" }),
+  color: varchar("color", { length: 20 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -260,6 +266,8 @@ export const notificationsTable = pgTable("notifications", {
   title: varchar("title", { length: 160 }).notNull(),
   body: text("body").notNull(),
   sendTo: varchar("send_to", { length: 40 }).notNull(),
+  type: text("type", { enum: ["Teacher", "Urgent", "Administrative", "User", "Grade", "Book"] }),  
+  read: boolean("read").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -1,21 +1,104 @@
 import { Context } from "hono";
 import { ITeachersRepository, teachersRepository } from "../../db/repo/index.ts";
 import { addMultipleSchemaBody } from "./admin.schemas.ts";
+import { db } from "../../db/db.ts";
+import { eventsTable } from "../../db/schemas.ts";
+import { teachersTable } from "../../db/schemas.ts";
+import { users } from "../../db/schemas.ts";
+import { eq, and, gte, lte } from "drizzle-orm";
 import { TeacherSearchSchema } from "../../types.ts";
 import { adminService } from "./admin.service.ts";
-import { json } from "zod";
 
 
+export const getEvents = async (c: any) => {
+  try {
+    const user = c.get("user");
+    const schoolId = user.info.id;
+    const { startDate, endDate } = c.req.query();
 
-class AdminController {
-    constructor(private readonly teachersRepository: ITeachersRepository) { }
+    const events = await db
+      .select({
+        id: eventsTable.id,
+        title: eventsTable.title,
+        start: eventsTable.date,
+        end: eventsTable.endDate,
+        description: eventsTable.description,
+        className: eventsTable.className,
+        teacherName: users.name,
+        color: eventsTable.color,
+        allDay: eventsTable.allDay,
+        repeatWeekly: eventsTable.repeatWeekly,
+        isClass: eventsTable.isClass,
+      })
+      .from(eventsTable)
+      .leftJoin(teachersTable, eq(eventsTable.teacherId, teachersTable.id))
+      .leftJoin(users, eq(teachersTable.userId, users.id))
+      .where(
+        and(
+          eq(eventsTable.schoolId, schoolId),
+          startDate ? gte(eventsTable.date, new Date(startDate)) : undefined,
+          endDate ? lte(eventsTable.date, new Date(endDate)) : undefined,
+     )
+    );
 
-    async listTeachers(search_queries: TeacherSearchSchema) {
-        return await this.teachersRepository.listTeachers(search_queries);
+    const formatted = events.map(e => ({
+      id: e.id,
+      title: e.title,
+      start: e.start,
+      end: e.end ?? e.start,
+      color: e.color ?? "#3b82f6",
+      description: e.description ?? "",
+      allDay: e.allDay ?? false,
+      repeatWeekly: e.repeatWeekly ?? false,
+      isClass: e.isClass ?? false,
+      className: e.className ?? "",
+      teacherName: e.teacherName ?? "",
+    }));
+
+    return c.json(formatted);
+} catch (err) {
+    console.log(err);
+    return c.json({ error: "Failed to fetch events" }, 500);
+  }
+};
+
+export const postEvent = async (c: any) => {
+  try {
+    const user = c.get("user");
+    const schoolId = user.info.id; 
+
+    const body = await c.req.json();
+
+    let teacherId = null;
+    if (body.isClass && body.teacherName) {
+      const teacher = await db
+        .select({ id: teachersTable.id })
+        .from(teachersTable)
+        .leftJoin(users, eq(teachersTable.userId, users.id))
+        .where(
+          and(
+            eq(teachersTable.schoolId, schoolId),
+            eq(users.name, body.teacherName)
+          )
+        )
+        .limit(1);
+
+      teacherId = teacher[0]?.id ?? null;
     }
 
-    async addMultipleTeachers(c : Context) {
-        
+    class AdminController {}
+    
+}catch (err) {    console.log(err);
+    return c.json({ error: "Failed to create event" }, 500);
+}
+}
+
+class AdminController {
+  
+    constructor(private teachersRepo: ITeachersRepository) {}
+
+
+  async addMultipleTeachers(c : Context) {
         const { file , type , schoolId } = await c.req.formData().then(form => {
             const file = form.get("file") as File;
             const type = form.get("type") as string;
@@ -47,6 +130,5 @@ class AdminController {
 
     }
 }
-
 export const adminController = new AdminController(teachersRepository);
 

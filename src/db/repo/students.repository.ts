@@ -2,7 +2,7 @@ import { db, type Database } from "../db.ts";
 import { studentsTable, users } from "../schemas.ts";
 import type { NewStudent, Student, StudentSearchSchema } from "../../types.ts";
 import { eq, inArray, like, sql } from "drizzle-orm";
-import { StudentWithUser } from "../../modules/students/students.types.ts";
+import { StudentWithUser } from "../../modules/student/students.types.ts";
 
 export interface IStudentsRepository {
   createStudent(data: NewStudent): Promise<Student>;
@@ -17,7 +17,10 @@ class StudentsRepository implements IStudentsRepository {
   constructor(private readonly db: Database) { }
 
   async createStudent(data: NewStudent): Promise<Student> {
-    const [row] = await this.db.insert(studentsTable).values(data).returning();
+    const [row] = await this.db.insert(studentsTable).values({
+        ...data,
+        id: data.id ?? crypto.randomUUID(),
+    }).returning();
     return row;
   }
 
@@ -44,7 +47,8 @@ class StudentsRepository implements IStudentsRepository {
     sortBy,
     sortOrder,
     grade,
-    status
+    status,
+    schoolId
   }: StudentSearchSchema
   ) {
     const offset = (page - 1) * size;
