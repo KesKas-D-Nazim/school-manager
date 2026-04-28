@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { Database, db } from "../db.js";
-import { users } from "../schema.js";
+import { users } from "../schemas.js";
 import type { NewUser, User } from "../../types.js";
 
 
@@ -36,7 +36,7 @@ class UsersRepository implements IUsersRepository {
     username: string,
   ): Promise<User | undefined> {
     return this.db.query.users.findFirst({
-      where: eq(users.username, username),
+      where: eq(users.name, username),
     });
   }
 
@@ -59,3 +59,26 @@ class UsersRepository implements IUsersRepository {
 
 export const usersRepository = new UsersRepository(db);
 
+export async function findUserByUsername(
+  username: string,
+): Promise<User | undefined> {
+  return db.query.users.findFirst({
+    where: eq(users.name, username),
+  });
+}
+
+export async function updateUser(
+  id: string,
+  data: Partial<NewUser>,
+): Promise<User | undefined> {
+  const [row] = await db
+    .update(users)
+    .set(data)
+    .where(eq(users.id, id))
+    .returning();
+  return row;
+}
+
+export async function deleteUser(id: string): Promise<void> {
+  await db.delete(users).where(eq(users.id, id));
+}

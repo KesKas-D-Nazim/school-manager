@@ -1,62 +1,180 @@
-import { IStudentsRepository, studentsRepository, usersRepository } from "../../db/repo";
-import { NewStudent, StudentSearchSchema } from "../../types";
-import generateId from "../../utils/id_generator";
-import { generateTemporaryPassword } from "../../utils/temp_password_generator";
-import { passwordHasher } from "../auth/services/password_hasher.service";
-import { NewStudentSchema } from "./students.schema";
-import { StudentUser, StudentUserDto } from "./students.types";
+import { coursesTable, notificationsTable, studentsTable, enrollmentsTable, teachersTable, users } from "../../db/schemas";
+import { eq } from "drizzle-orm";
+import { Context } from "hono";
+import { db } from "../../db/db.ts";
+import { studentsRepository } from "../../db/repo/index.ts";
+import { auth } from "../../utils/auth.ts";
+import { CreateStudentBody, UpdateStudentBody } from "./students.schema.ts";
+// import type { CreateStudentBody, UpdateStudentBody } from "./students.schema.ts";
+
+type AuthUser = {
+	role?: "admin" | "teacher" | "student";
+	info?: {
+		id?: string;
+		schoolId?: string;
+	};
+};
 
 class StudentsController {
-    constructor(private readonly studentsRepository: IStudentsRepository) { }
+	async listStudents(c: Context) {
+		const user = c.get("user") as AuthUser | undefined;
+		const schoolId =
+			user?.role === "student" ? user?.info?.schoolId : user?.info?.id;
 
-    async listStudents(search_queries: StudentSearchSchema) {
-        return await this.studentsRepository.listStudents(search_queries);
-    }
+		if (!schoolId) {
+			return c.json({ success: false, message: "Unauthorized" }, 401);
+		}
 
-    async addStudent(data: NewStudentSchema) {
-        const userId = generateId();
-        const studentId = crypto.randomUUID();
-        console.log(studentId)
+		const searchQueries = (c.req as any).valid(
+			"query",
+		) as Parameters<typeof studentsRepository.listStudents>[0];
+		const { data, pagination } = await studentsRepository.listStudents({
+			...searchQueries,
+			schoolId, // what does that mean. the school id shouldn't be in the search queries
+		});
 
-        const password = generateTemporaryPassword(data.name)
-        const passwordHash = await passwordHasher.hashPassword(password);
+		return c.json({
+			success: true,
+			data: data.map((s: any) => ({
+				id: s.id,
+				name: s.user?.name,
+				email: s.user?.email,
+				grade: s.grade,
+				classe: s.classe,
+				parentPhoneNumber: s.parentPhoneNumber,
+				parentName: s.parentName,
+				status: s.status,
+				gender: s.gender,
+				address: s.address,
+				dateOfBirth: s.dateOfBirth,
+				enrollmentDate: s.createdAt,
+				imgSrc: "",
+				//schoolId: s.schoolId,
+			})),
+			pagination: {
+				totalPages: pagination.totalPages,
+				totalElements: pagination.totalCount,
+			}
+		}
+			// , 200 // you already have a success true 
+		);
+	}
 
-        const newUser = await usersRepository.createUser({
-            id: userId,
-            email: data.email,
-            passwordHash,
-            role: "Student",
-            username: data.name,
-            image: data.imgSrc,
-            emailVerified: false,
-            telNumber: data.telNumber
-        });
+	async getStudent(c: Context) {
+		const id = c.req.param("id")!;
+		const student = await studentsRepository.findStudentById(id);
 
-        const student = await studentsRepository.createStudent({
-            userId: userId,
-            id: studentId,
-            gender: data.gender,
-            schoolId: data.schoolId,
-            grade: data.grade,
-            classe: data.classe,
-            address: data.address,
-            dateOfBirth: data.dateOfBirth,
-            parentName: data.parentName,
-            parentPhoneNumber: data.parentPhoneNumber,
-            status: "New",
-        })
+		if (!student) {
+			return c.json({ success: false, message: "Student not found" }, 404);
+		}
 
-        console.log(student)
-        console.log(newUser)
+		return c.json({ success: true, data: student }, 200);
+	}
 
-        const studentWithUser: StudentUser = StudentUserDto(student, newUser);
-        return studentWithUser
-    }
+	async createStudent(c: Context) {
+		const user = c.get("user") as AuthUser | undefined;
 
-    async getStudent(studentId: string) {
-        return this.studentsRepository.findStudentById(studentId)
-    }
+		if (user?.role !== "admin") {
+			return c.json({ success: false, message: "Forbidden" }, 403);
+		}
+
+		const schoolId = user.info?.id;
+		if (!schoolId) {
+			return c.json({ success: false, message: "School not found" }, 400);
+		}
+
+		const body = (c.req as any).valid("json") as CreateStudentBody;
+		const { name, email, password, ...rest } = body;
+
+		let newUser: Awaited<ReturnType<typeof auth.api.signUpEmail>>;
+		try {
+			newUser = await auth.api.signUpEmail({
+				body: {
+					name,
+					email,
+					password,
+					role: "student",
+				},
+			});
+		} catch (error: any) {
+			const code = String(error?.body?.code || error?.code || "").toUpperCase();
+			const message = String(error?.body?.message || error?.message || "").toLowerCase();
+
+			if (code === "USER_ALREADY_EXISTS" || message.includes("already exists")) {
+				return c.json({ success: false, message: "Email already exists" }, 409);
+			}
+
+			return c.json({ success: false, message: "Failed to create student" }, 400);
+		}
+
+		const student = await studentsRepository.createStudent({
+			id: crypto.randomUUID() as string,
+			schoolId,
+			userId: newUser.user.id!,
+			...rest,
+		});
+
+		return c.json({ success: true, data: student }, 201);
+	}
+
+	async updateStudent(c: Context) {
+		const user = c.get("user") as AuthUser | undefined;
+		const schoolId =
+			user?.role === "student" ? user?.info?.schoolId : user?.info?.id;
+
+		if (!schoolId) {
+			return c.json({ success: false, message: "Unauthorized" }, 401);
+		}
+
+		const id = c.req.param("id")!;
+		const body = (c.req as any).valid("json") as UpdateStudentBody;
+		const student = await studentsRepository.findStudentById(id);
+
+		if (!student) {
+			return c.json({ success: false, message: "Student not found" }, 404);
+		}
+
+		if (student.schoolId !== schoolId) {
+			return c.json({ success: false, message: "Forbidden" }, 403);
+		}
+
+		const updated = await studentsRepository.updateStudent(id, body);
+
+		if (!updated) {
+			return c.json({ success: false, message: "Student not found" }, 404);
+		}
+
+		return c.json({ success: true, data: updated }, 200);
+	}
+
+	async deleteStudent(c: Context) {
+		const user = c.get("user") as AuthUser | undefined;
+		const schoolId =
+			user?.role === "student" ? user?.info?.schoolId : user?.info?.id;
+
+		if (!schoolId) {
+			return c.json({ success: false, message: "Unauthorized" }, 401);
+		}
+
+		const id = c.req.param("id")!;
+		const student = await studentsRepository.findStudentById(id);
+
+		if (!student) {
+			return c.json({ success: false, message: "Student not found" }, 404);
+		}
+
+		if (student.schoolId !== schoolId) {
+			return c.json({ success: false, message: "Forbidden" }, 403);
+		}
+
+		if (!student.userId) {
+			return c.json({ success: false, message: "Student user not found" }, 404);
+		}
+
+		await db.delete(users).where(eq(users.id, student.userId));
+
+		return c.json({ success: true, message: "Student deleted" }, 200);
+	}
 }
 
-export const studentsController = new StudentsController(studentsRepository);
-
+export const studentsController = new StudentsController();

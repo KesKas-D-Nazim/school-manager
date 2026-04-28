@@ -1,15 +1,15 @@
-import { eq, inArray, like, sql } from "drizzle-orm";
+import { and, eq, inArray, like, sql } from "drizzle-orm";
 
 import { Database, db } from "../db.js";
 import type { NewTeacher, Teacher, TeacherSearchSchema } from "../../types.js";
 import { TeacherWithUser } from "../../modules/teachers/teachers.types.js";
-import { teachersTable, users } from "../schema.js";
+import { teachersTable, users } from "../schemas.js";
 
 export interface ITeachersRepository {
   createTeacher(data: NewTeacher): Promise<Teacher>;
   findTeacherById(id: string): Promise<Teacher | undefined>;
   findTeacherByUserId(userId: string): Promise<Teacher | undefined>;
-  listTeachers(search_queries: TeacherSearchSchema): Promise<{ data: TeacherWithUser[]; pagination: { totalCount: number, totalPages: number } }>;
+  listTeachers(search_aueries: TeacherSearchSchema & { schoolId: string }): Promise<{ data: TeacherWithUser[]; pagination: { totalCount: number, totalPages: number } }>;
   updateTeacher(id: string, data: Partial<NewTeacher>): Promise<Teacher | undefined>;
   deleteTeacher(id: string): Promise<void>;
 }
@@ -39,50 +39,46 @@ class TeacherRepository implements ITeachersRepository {
   }
 
   async listTeachers({
+    schoolId,
     search,
     page,
     size,
     sortBy,
     sortOrder,
     subject
-  }: TeacherSearchSchema): Promise<{ data: TeacherWithUser[]; pagination: { totalCount: number; totalPages: number; }; }> {
+  }: TeacherSearchSchema & { schoolId: string }): Promise<{ data: TeacherWithUser[]; pagination: { totalCount: number; totalPages: number; }; }> {
     const safePage = Math.max(1, page);
     const safeLimit = Math.max(1, size);
     const offset = (safePage - 1) * safeLimit;
     const searchValue = search?.trim();
 
     const whereClause = searchValue
-      ? inArray(
-        teachersTable.userId,
-        db
-          .select({ id: users.id })
-          .from(users)
-          .where(like(users.username, `%${searchValue}%`)),
+      ? and(
+        eq(teachersTable.schoolId, schoolId),
+        inArray(
+          teachersTable.userId,
+          db
+            .select({ id: users.id })
+            .from(users)
+            .where(like(users.name, `%${searchValue}%`)),
+        ),
       )
-      : undefined;
+      : eq(teachersTable.schoolId, schoolId);
 
-    const totalQuery = whereClause
-      ? db
-        .select({ total: sql<number>`count(*)` })
-        .from(teachersTable)
-        .where(whereClause)
-      : db.select({ total: sql<number>`count(*)` }).from(teachersTable);
+    const totalQuery = db
+      .select({ total: sql<number>`count(*)` })
+      .from(teachersTable)
+      .where(whereClause);
     const [totalRow] = await totalQuery;
     const totalCount = Number(totalRow?.total ?? 0);
     const totalPages = Math.ceil(totalCount / safeLimit);
 
-    const data = whereClause
-      ? await db.query.teachersTable.findMany({
-        where: whereClause,
-        with: { user: true },
-        limit: safeLimit,
-        offset,
-      })
-      : await db.query.teachersTable.findMany({
-        with: { user: true },
-        limit: safeLimit,
-        offset,
-      });
+    const data = await db.query.teachersTable.findMany({
+      where: whereClause,
+      with: { user: true },
+      limit: safeLimit,
+      offset,
+    });
 
     return { data, pagination: { totalCount, totalPages } };
   }

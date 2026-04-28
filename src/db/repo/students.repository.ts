@@ -1,14 +1,14 @@
 import { db, type Database } from "../db.ts";
-import { studentsTable, users } from "../schema.ts";
+import { studentsTable, users } from "../schemas.ts";
 import type { NewStudent, Student, StudentSearchSchema } from "../../types.ts";
-import { count, eq, inArray, like, sql } from "drizzle-orm";
-import { StudentUser, StudentUserDto } from "../../modules/students/students.types.ts";
+import { eq, inArray, like, sql } from "drizzle-orm";
+import { StudentWithUser } from "../../modules/student/students.types.ts";
 
 export interface IStudentsRepository {
   createStudent(data: NewStudent): Promise<Student>;
-  findStudentById(id: string): Promise<StudentUser | undefined>;
-  findStudentByUserId(userId: string): Promise<StudentUser | undefined>;
-  listStudents(search_queries: StudentSearchSchema): Promise<{ data: StudentUser[]; pagination: { totalCount: number, totalPages: number } }>;
+  findStudentById(id: string): Promise<StudentWithUser | undefined>;
+  findStudentByUserId(userId: string): Promise<StudentWithUser | undefined>;
+  listStudents(search_queries: StudentSearchSchema): Promise<{ data: StudentWithUser[]; pagination: { totalCount: number, totalPages: number } }>;
   updateStudent(id: string, data: Partial<NewStudent>): Promise<Student | undefined>;
   deleteStudent(id: string): Promise<void>;
 }
@@ -17,8 +17,11 @@ class StudentsRepository implements IStudentsRepository {
   constructor(private readonly db: Database) { }
 
   async createStudent(data: NewStudent): Promise<Student> {
-    const [student] = await this.db.insert(studentsTable).values(data).returning();
-    return student;
+    const [row] = await this.db.insert(studentsTable).values({
+      ...data,
+      id: data.id ?? crypto.randomUUID(),
+    }).returning();
+    return row;
   }
 
   async findStudentById(id: string) {
@@ -26,7 +29,8 @@ class StudentsRepository implements IStudentsRepository {
       where: eq(studentsTable.id, id),
       with: { user: true },
     });
-    return !student ? undefined : StudentUserDto(student, student.user!)
+    return student
+    // ? undefined : StudentWithUserDto(student, student.user!)
   }
 
   async findStudentByUserId(
@@ -36,11 +40,22 @@ class StudentsRepository implements IStudentsRepository {
       where: eq(studentsTable.userId, userId),
       with: { user: true },
     });
-    return !student ? undefined : StudentUserDto(student, student.user!)
+    return student
+    // ? undefined : StudentUserDto(student, student.user!)
 
   }
 
-  async listStudents({ search, page, size }: StudentSearchSchema) {
+  async listStudents({
+    search,
+    page,
+    size,
+    sortBy,
+    sortOrder,
+    grade,
+    status,
+    schoolId
+  }: StudentSearchSchema
+  ) {
     const offset = (page - 1) * size;
     const searchValue = search?.trim();
 
@@ -51,7 +66,7 @@ class StudentsRepository implements IStudentsRepository {
         this.db
           .select({ id: users.id })
           .from(users)
-          .where(like(users.username, `%${searchValue}%`))
+          .where(like(users.name, `%${searchValue}%`)),
       )
       : undefined;
 
@@ -72,7 +87,7 @@ class StudentsRepository implements IStudentsRepository {
     const totalCount = 0// Number(totalResult[0]?.total ?? 0);
     const totalPages = 0// Math.ceil(totalCount / size);
 
-    const data_dtos = data.map(student => StudentUserDto(student, student.user!))
+    const data_dtos = data.map(student => student)
     return { data: data_dtos, pagination: { totalCount, totalPages } };
   }
 
