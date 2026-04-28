@@ -46,35 +46,35 @@ export type NewNotificationFile = Omit<typeof schema.notificationFilesTable.$inf
 
 
 
-export const searchSchema = z.object({
-    search: z.string().optional(),
-    page: z.string().optional(),
-    limit: z.string().optional(),
-});
+// export const searchSchema = z.object({
+//     search: z.string().optional(),
+//     page: z.string().optional(),
+//     limit: z.string().optional(),
+// });
 
-export type SearchSchema = z.infer<typeof searchSchema>;
+// export type SearchSchema = z.infer<typeof searchSchema>;
 
-export const userSearchSchema = z.object({
-    search: z.string().optional().default(""),
-    page: z.coerce.number().int().optional().default(1),
-    size: z.coerce.number().int().optional().default(10),
-    sortBy: z.enum(['name', 'email']).default('name'),
-    sortOrder: z.enum(['asc', 'desc']).nullable().default('asc')
-});
+// export const userSearchSchema = z.object({
+//     search: z.string().optional().default(""),
+//     page: z.coerce.number().int().optional().default(1),
+//     size: z.coerce.number().int().optional().default(10),
+//     sortBy: z.enum(['name', 'email']).default('name'),
+//     sortOrder: z.enum(['asc', 'desc']).nullable().default('asc')
+// });
 
-export const studentSearchSchema = userSearchSchema.extend({
-    grade: z.string().optional(),
-    status: z.string(),
-    schoolId: z.string().optional() // this shouldn't be in here because those search parameters are in the front end and this shouldn't be shown in the front end 
-});
+// export const studentSearchSchema = userSearchSchema.extend({
+//     grade: z.string().optional(),
+//     status: z.string(),
+//     schoolId: z.string().optional() // this shouldn't be in here because those search parameters are in the front end and this shouldn't be shown in the front end 
+// });
 
-export const teacherSearchSchema = userSearchSchema.extend({
-    subject: z.string().optional(),
-});
+// export const teacherSearchSchema = userSearchSchema.extend({
+//     subject: z.string().optional(),
+// });
 
-export type UserSearchSchema = z.infer<typeof userSearchSchema>;
-export type StudentSearchSchema = z.infer<typeof studentSearchSchema>;
-export type TeacherSearchSchema = z.infer<typeof teacherSearchSchema>;
+// export type UserSearchSchema = z.infer<typeof userSearchSchema>;
+// export type StudentSearchSchema = z.infer<typeof studentSearchSchema>;
+// export type TeacherSearchSchema = z.infer<typeof teacherSearchSchema>;
 
 export const validUUIDSchema = z.string().uuid();
 
@@ -104,3 +104,34 @@ export const validUUIDSchema = z.string().uuid();
 // };
 
 // export type PaginatedApiResponse<T> = PaginatedSuccessResponse<T> | errorResponse;
+
+export const searchSchema = z.object({
+    search: z.string().optional(),
+    page: z.string().optional(),
+    limit: z.string().optional(),
+});
+
+export type SearchSchema = z.infer<typeof searchSchema>;
+
+export const userSearchSchema = z.object({
+    search: z.string().optional().default(""),
+    page: z.number().int().optional().default(1),
+    size: z.number().int().optional().default(10),
+    sortBy: z.enum(['name', 'email']).default('name'),
+    sortOrder: z.enum(['asc', 'desc']).nullable().default('asc')
+});
+
+export const studentSearchSchema = userSearchSchema.extend({
+    grade: z.string().optional(),
+    status: z.string(),
+    schoolId: z.string().optional()
+});
+
+export const teacherSearchSchema = userSearchSchema.extend({
+    subject: z.string().optional(),
+});
+
+export type UserSearchSchema = z.infer<typeof userSearchSchema>;
+export type StudentSearchSchema = z.infer<typeof studentSearchSchema>;
+export type TeacherSearchSchema = z.infer<typeof teacherSearchSchema>;
+

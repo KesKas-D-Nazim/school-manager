@@ -175,9 +175,9 @@ class AuthController {
         }
 
         try {
-            const accessToken = await authService.rotateSessionToken(c, currentRefreshToken);
+            const refreshResult = await authService.rotateSessionToken(c, currentRefreshToken);
 
-            if (!accessToken) {
+            if (!refreshResult) {
                 return c.json(
                     {
                         message: "Invalid or expired session token",
@@ -188,7 +188,8 @@ class AuthController {
 
             return c.json(
                 {
-                    token: accessToken,
+                    token: refreshResult.accessToken,
+                    user: refreshResult.user,
                 },
                 200,
             );

@@ -2,7 +2,7 @@
 import { db } from "../../db/db.ts";
 import { adminsTable, session } from "../../db/schemas.ts";
 import {  eq } from "drizzle-orm";
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { sign } from "hono/jwt";
 import { setCookie } from "hono/cookie";
 import { Context } from "hono";
@@ -134,7 +134,10 @@ class AuthService {
     }
 
     async addAdmin(data: any, schoolName: string) {
+        const schoolId = randomUUID();
+
         const [admin] = await db.insert(adminsTable).values({
+            id: schoolId,
             userId: data.user.id,
             schoolName,
         }).returning({ id: adminsTable.id });
@@ -188,7 +191,21 @@ class AuthService {
 
         
 
-        return accessToken ;
+        const user = await this.findUserById(existingSession.userId);
+        if (!user || !isUserRole(user.role)) {
+            await db.delete(session).where(eq(session.id, existingSession.id));
+            return null;
+        }
+
+        const info = await this.getUserInfo(user.role, user.id);
+
+        return {
+            accessToken,
+            user: {
+                ...user,
+                info,
+            },
+        };
     }
 
     

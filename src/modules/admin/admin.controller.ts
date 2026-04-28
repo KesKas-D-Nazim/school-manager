@@ -1,9 +1,14 @@
-
-import { ITeachersRepository, teachersRepository } from "../../db/repo/teachers.repository.ts";
+import { Context } from "hono";
+import { ITeachersRepository, teachersRepository } from "../../db/repo/index.ts";
+import { addMultipleSchemaBody } from "./admin.schemas.ts";
+import { db } from "../../db/db.ts";
+import { eventsTable } from "../../db/schemas.ts";
+import { teachersTable } from "../../db/schemas.ts";
+import { users } from "../../db/schemas.ts";
+import { eq, and, gte, lte } from "drizzle-orm";
 import { TeacherSearchSchema } from "../../types.ts";
-import { db }from "../../db/db";
-import { eventsTable, teachersTable, users } from "../../db/schemas"
-import { eq, and, gte, lte } from "drizzle-orm"
+import { adminService } from "./admin.service.ts";
+
 
 export const getEvents = async (c: any) => {
   try {
@@ -81,75 +86,49 @@ export const postEvent = async (c: any) => {
       teacherId = teacher[0]?.id ?? null;
     }
 
-    await db.insert(eventsTable).values({
-      id: crypto.randomUUID(),
-      schoolId,
-      title: body.title,
-      description: body.description ?? null,
-      date: new Date(body.start),
-      endDate: new Date(body.end),
-      color: body.color ?? null,
-      allDay: body.allDay ?? false,
-      repeatWeekly: body.repeatWeekly ?? false,
-      isClass: body.isClass ?? false,
-      className: body.className ?? null,
-      teacherId: teacherId,
-    });
-
-    return c.json({ message: "Event created" }, 201);
-  } catch (err) {
-    console.log(err);
+    class AdminController {}
+    
+}catch (err) {    console.log(err);
     return c.json({ error: "Failed to create event" }, 500);
-  }
-};
+}
+}
 
-export const editEvent = async (c: any) => {
-  try {
-    const id = c.req.param("id");
-    const body = await c.req.json();
+class AdminController {
+  
+    constructor(private teachersRepo: ITeachersRepository) {}
 
-    let teacherId = null;
-    if (body.isClass && body.teacherName) {
-      const teacher = await db
-        .select({ id: teachersTable.id })
-        .from(teachersTable)
-        .leftJoin(users, eq(teachersTable.userId, users.id))
-        .where(eq(users.name, body.teacherName))
-        .limit(1);
-      teacherId = teacher[0]?.id ?? null;
+
+  async addMultipleTeachers(c : Context) {
+        const { file , type , schoolId } = await c.req.formData().then(form => {
+            const file = form.get("file") as File;
+            const type = form.get("type") as string;
+            const schoolId = form.get("schoolId") as string;
+            return { file, type, schoolId };
+        })
+        
+        const validation = addMultipleSchemaBody.safeParse({ file, type, schoolId });
+        if (!validation.success) {
+            return c.json({success : false , message: "Invalid input data" }, 400);
+        }
+
+
+        const {isMatches , data} = await adminService.isExcelMatches(file);
+        if (!isMatches ) {
+            return c.json({ success: false, message: "Excel file does not match the required format." }, 400);
+        }
+        if (data === undefined || data?.length === 0) {
+            return c.json({ success: false, message: "No data found in the Excel file." }, 400);
+        }
+
+        const result = await adminService.insertInDb(type, data, schoolId);
+
+        if (!result.success) {
+            return c.json({ success: false, message: result.message ?? `Failed to add ${type === "teacher" ? "teachers" : "students"}.` }, 500);
+        }
+
+        return c.json({ success: true, message: result.message }, 200);
+
     }
+}
+export const adminController = new AdminController(teachersRepository);
 
-    await db.update(eventsTable)
-      .set({
-        title: body.title,
-        description: body.description ?? null,
-        date: new Date(body.start),
-        endDate: new Date(body.end),
-        color: body.color ?? null,
-        allDay: body.allDay ?? false,
-        repeatWeekly: body.repeatWeekly ?? false,
-        isClass: body.isClass ?? false,
-        className: body.className ?? null,
-        teacherId: teacherId,
-      })
-      .where(eq(eventsTable.id, id));
-
-    return c.json({ message: "Event updated" }, 200);
-  } catch (err) {
-    console.log(err);
-    return c.json({ error: "Failed to update event" }, 500);
-  }
-};
-
-export const deleteEvent = async (c: any) => {
-  try {
-    const id = c.req.param("id");
-
-    await db.delete(eventsTable).where(eq(eventsTable.id, id));
-
-    return c.json({ message: "Event deleted" }, 200);
-  } catch (err) {
-    console.log(err);
-    return c.json({ error: "Failed to delete event" }, 500);
-  }
-};

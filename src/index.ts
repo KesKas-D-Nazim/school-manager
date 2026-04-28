@@ -4,10 +4,10 @@ import { Hono, ValidationTargets } from "hono";
 import { cors } from 'hono/cors'
 import authRouter from "./modules/auth/auth.router.ts";
 import { db } from "./db/db.ts";
-//import { adminRouter } from "./modules/admin/admin.router.ts";
-import studentRouter from "./modules/student/student.router.ts";
+import { adminRouter } from "./modules/admin/admin.router.ts";
+import studentsRouter from "./modules/students/students.router.ts";
 import { teachersRouter } from "./modules/teachers/teachers.router.ts";
-import { authMiddleware } from "./middleware/authMiddleware.ts";
+import { authMiddleware } from "./middlewares/authMiddleware.ts";
 import { auth} from "./utils/auth.ts";
 
 import sharedRouter from "./modules/shared.router.ts"; 
@@ -37,7 +37,7 @@ app.on(["POST", "GET"], "/better-auth/**", async (c) => {
 });
 
 //app.route("/api/admin", adminRouter);
-app.route("/student", studentRouter);
+app.route("/student", studentsRouter);
 app.route("/api/teachers", teachersRouter);
 
 app.route("/", sharedRouter);
