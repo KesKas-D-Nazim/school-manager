@@ -1,10 +1,11 @@
-import { coursesTable, notificationsTable, studentsTable, enrollmentsTable, teachersTable, users } from "../../db/schemas";
+
 import { eq } from "drizzle-orm";
 import { Context } from "hono";
 import { db } from "../../db/db.ts";
 import { studentsRepository } from "../../db/repo/index.ts";
 import { auth } from "../../utils/auth.ts";
 import { CreateStudentBody, UpdateStudentBody } from "./students.schema.ts";
+import { users } from "../../db/schemas.ts";
 // import type { CreateStudentBody, UpdateStudentBody } from "./students.schema.ts";
 
 type AuthUser = {

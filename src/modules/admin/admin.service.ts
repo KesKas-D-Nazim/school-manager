@@ -1,12 +1,12 @@
 import * as XLSX from "xlsx";
 import { db } from "../../db/db";
-import {teacherExcelColumns , studentExcelColumns} from "./types"
-import {users , account , teachersTable , studentsTable} from "../../db/schemas"
-import {handlePassword} from "../../utils/hash_password"
+import { teacherExcelColumns, studentExcelColumns } from "./types"
+import { users, account, teachersTable, studentsTable } from "../../db/schemas"
+import { handlePassword } from "../../utils/hash_password"
 
 type isMatchesResult = {
     isMatches: boolean;
-    data? : string[][];
+    data?: string[][];
 }
 
 type TeacherStatus = "Active" | "Inactive" | "Pending" | "New";
@@ -40,7 +40,7 @@ class AdminService {
 
         const existingUsers = await db.select({ email: users.email }).from(users);
         const existingEmails = new Set(existingUsers.map(u => u.email));
-        
+
         const rowIndicesToSkip = new Set<number>();
         for (let i = 1; i < data.length; i++) {
             const email = data[i][emailColumnIndex]?.trim();
@@ -91,7 +91,7 @@ class AdminService {
 
         for (let i = 1; i < data.length; i++) {
             if (rowIndicesToSkip.has(i)) continue; // Skip duplicate emails
-            
+
             const row = data[i];
             const userId = "teacher_" + crypto.randomUUID();
             const createdAtValue = row[indexMapTeachers.createdAt];
@@ -151,7 +151,7 @@ class AdminService {
 
         for (let i = 1; i < data.length; i++) {
             if (rowIndicesToSkip.has(i)) continue; // Skip duplicate emails
-            
+
             const row = data[i];
             const userId = "student_" + crypto.randomUUID();
             const createdAtValue = row[indexMapStudents.createdAt];
@@ -205,7 +205,7 @@ class AdminService {
     }
 
 
-    async isExcelMatches(file: File) : Promise<isMatchesResult> {
+    async isExcelMatches(file: File): Promise<isMatchesResult> {
 
         const woorkbook = XLSX.read(await file.arrayBuffer(), { type: "buffer" });
         const sheetName = woorkbook.SheetNames[0];
@@ -213,17 +213,17 @@ class AdminService {
 
         const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as string[][];
 
-        
+
         return {
-            isMatches: teacherExcelColumns.every(column => data[0].includes(column)) || 
+            isMatches: teacherExcelColumns.every(column => data[0].includes(column)) ||
                 studentExcelColumns.every(column => data[0].includes(column)),
-            data : data 
+            data: data
         };
     }
-    async insertInDb(type : string , data : string[][], schoolId : string ): Promise<{ success: boolean  , message?: string}> {
+    async insertInDb(type: string, data: string[][], schoolId: string): Promise<{ success: boolean, message?: string }> {
         const columns = data[0];
         const emailColumnIndex = columns.indexOf("email");
-        
+
         if (emailColumnIndex === -1) {
             return { success: false, message: "Email column not found in the Excel file." };
         }
@@ -248,7 +248,7 @@ class AdminService {
             }
 
             return { success: true, message };
-        }catch(err) {
+        } catch (err) {
             console.log("Error inserting data into the database:", err);
             return { success: false, message: "An error occurred while inserting data into the database." };
         }

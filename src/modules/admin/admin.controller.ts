@@ -2,12 +2,10 @@ import { Context } from "hono";
 import { ITeachersRepository, teachersRepository } from "../../db/repo/index.ts";
 import { addMultipleSchemaBody } from "./admin.schemas.ts";
 import { db } from "../../db/db.ts";
-import { eventsTable } from "../../db/schemas.ts";
-import { teachersTable } from "../../db/schemas.ts";
-import { users } from "../../db/schemas.ts";
 import { eq, and, gte, lte } from "drizzle-orm";
 import { TeacherSearchSchema } from "../../types.ts";
 import { adminService } from "./admin.service.ts";
+import { eventsTable, teachersTable, users } from "../../db/schemas.ts";
 
 
 export const getEvents = async (c: any) => {
@@ -38,8 +36,8 @@ export const getEvents = async (c: any) => {
           eq(eventsTable.schoolId, schoolId),
           startDate ? gte(eventsTable.date, new Date(startDate)) : undefined,
           endDate ? lte(eventsTable.date, new Date(endDate)) : undefined,
-     )
-    );
+        )
+      );
 
     const formatted = events.map(e => ({
       id: e.id,
@@ -56,7 +54,7 @@ export const getEvents = async (c: any) => {
     }));
 
     return c.json(formatted);
-} catch (err) {
+  } catch (err) {
     console.log(err);
     return c.json({ error: "Failed to fetch events" }, 500);
   }
@@ -65,7 +63,7 @@ export const getEvents = async (c: any) => {
 export const postEvent = async (c: any) => {
   try {
     const user = c.get("user");
-    const schoolId = user.info.id; 
+    const schoolId = user.info.id;
 
     const body = await c.req.json();
 
@@ -86,49 +84,55 @@ export const postEvent = async (c: any) => {
       teacherId = teacher[0]?.id ?? null;
     }
 
-    class AdminController {}
-    
-}catch (err) {    console.log(err);
+  } catch (err) {
+    console.log(err);
     return c.json({ error: "Failed to create event" }, 500);
-}
+  }
 }
 
 class AdminController {
-  
-    constructor(private teachersRepo: ITeachersRepository) {}
+
+  constructor(private teachersRepo: ITeachersRepository) { }
 
 
-  async addMultipleTeachers(c : Context) {
-        const { file , type , schoolId } = await c.req.formData().then(form => {
-            const file = form.get("file") as File;
-            const type = form.get("type") as string;
-            const schoolId = form.get("schoolId") as string;
-            return { file, type, schoolId };
-        })
-        
-        const validation = addMultipleSchemaBody.safeParse({ file, type, schoolId });
-        if (!validation.success) {
-            return c.json({success : false , message: "Invalid input data" }, 400);
-        }
+  async addMultipleTeachers(c: Context) {
+    const { file, type, schoolId } = await c.req.formData().then(form => {
+      const file = form.get("file") as File;
+      const type = form.get("type") as string;
+      const schoolId = form.get("schoolId") as string;
+      return { file, type, schoolId };
+    })
 
-
-        const {isMatches , data} = await adminService.isExcelMatches(file);
-        if (!isMatches ) {
-            return c.json({ success: false, message: "Excel file does not match the required format." }, 400);
-        }
-        if (data === undefined || data?.length === 0) {
-            return c.json({ success: false, message: "No data found in the Excel file." }, 400);
-        }
-
-        const result = await adminService.insertInDb(type, data, schoolId);
-
-        if (!result.success) {
-            return c.json({ success: false, message: result.message ?? `Failed to add ${type === "teacher" ? "teachers" : "students"}.` }, 500);
-        }
-
-        return c.json({ success: true, message: result.message }, 200);
-
+    const validation = addMultipleSchemaBody.safeParse({ file, type, schoolId });
+    if (!validation.success) {
+      return c.json({ success: false, message: "Invalid input data" }, 400);
     }
+
+
+    const { isMatches, data } = await adminService.isExcelMatches(file);
+    if (!isMatches) {
+      return c.json({ success: false, message: "Excel file does not match the required format." }, 400);
+    }
+    if (data === undefined || data?.length === 0) {
+      return c.json({ success: false, message: "No data found in the Excel file." }, 400);
+    }
+
+    const result = await adminService.insertInDb(type, data, schoolId);
+
+    if (!result.success) {
+      return c.json({ success: false, message: result.message ?? `Failed to add ${type === "teacher" ? "teachers" : "students"}.` }, 500);
+    }
+
+    return c.json({ success: true, message: result.message }, 200);
+
+  }
+
+  async TotalTeachers(c: Context) {
+    const schoolId = c.req.query("schoolId")!;
+    const result = await this.teachersRepo.getTotalTeachers(schoolId);
+    console.log("Total teachers : ", result);
+    return c.json({ success: true, data: result }, 200);
+  }
 }
 export const adminController = new AdminController(teachersRepository);
 

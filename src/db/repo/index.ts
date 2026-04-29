@@ -1,10 +1,10 @@
 export * from "./users.repository.js";
 export * from "./students.repository.js";
-// export * from "./teachers.repository.js";
-// export * from "./courses.repository.js";
-// export * from "./enrollments.repository.js";
-// export * from "./references.repository.js";
-// export * from "./assignments.repository.js";
-// export * from "./files.repository.js";
-// export * from "./events.repository.js";
-// export * from "./notifications.repository.js";
+export * from "./teachers.repository.js";
+export * from "./courses.repository.js";
+export * from "./enrollments.repository.js";
+export * from "./references.repository.js";
+export * from "./assignments.repository.js";
+export * from "./files.repository.js";
+export * from "./events.repository.js";
+export * from "./notifications.repository.js";

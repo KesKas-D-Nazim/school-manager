@@ -7,6 +7,7 @@ import { paginatedSuccessResponse, successResponse } from "../../utils/response.
 import { zvalidateWithThrow } from "../../utils/middlewares/zvalidate_with_throw.middleware.ts"
 import z from "zod"
 import { studentsController } from "../students/students.controller.ts"
+import { StudentWithUser } from "../students/students.types.ts"
 
 // export const adminRouter = new Hono()
 //     .get(
@@ -31,8 +32,152 @@ import { studentsController } from "../students/students.controller.ts"
 //             return c.json(successResponse(data), 200);
 //         })
 
+const studentsWithUserData: StudentWithUser[] = [
+    {
+        id: "student_001",
+        userId: "user_001",
+        schoolId: "school_001",
+        status: "Active",
+        grade: "4",
+        classe: "A",
+        parentPhoneNumber: "0550123456",
+        parentName: "John Doe",
+        gender: "Male",
+        address: "123 Main Street",
+        dateOfBirth: "2008-05-12",
+        studentPictureFileId: null,
+        user: {
+            id: "user_001",
+            name: "Ayoub Khatir",
+            email: "ayoub1@example.com",
+            emailVerified: false,
+            image: null,
+            telNumber: "0661111111",
+            role: "student",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        },
+    },
+
+    {
+        id: "student_002",
+        userId: "user_002",
+        schoolId: "school_001",
+        status: "Active",
+        grade: "3",
+        classe: "B",
+        parentPhoneNumber: "0550234567",
+        parentName: "Sarah Benali",
+        gender: "Female",
+        address: "Rue Didouche Mourad",
+        dateOfBirth: "2009-03-21",
+        studentPictureFileId: null,
+        user: {
+            id: "user_002",
+            name: "Lina Benali",
+            email: "lina2@example.com",
+            emailVerified: true,
+            image: null,
+            telNumber: "0662222222",
+            role: "student",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        },
+    },
+
+    {
+        id: "student_003",
+        userId: "user_003",
+        schoolId: "school_001",
+        status: "Pending",
+        grade: "5",
+        classe: "C",
+        parentPhoneNumber: "0550345678",
+        parentName: "Omar Haddad",
+        gender: "Male",
+        address: "Bir El Djir",
+        dateOfBirth: "2007-11-10",
+        studentPictureFileId: null,
+        user: {
+            id: "user_003",
+            name: "Yacine Haddad",
+            email: "yacine3@example.com",
+            emailVerified: false,
+            image: null,
+            telNumber: "0663333333",
+            role: "student",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        },
+    },
+
+    {
+        id: "student_004",
+        userId: "user_004",
+        schoolId: "school_001",
+        status: "Inactive",
+        grade: "2",
+        classe: "A",
+        parentPhoneNumber: "0550456789",
+        parentName: "Fatima Zohra",
+        gender: "Female",
+        address: "Hai El Yasmine",
+        dateOfBirth: "2010-07-18",
+        studentPictureFileId: null,
+        user: {
+            id: "user_004",
+            name: "Imane Zohra",
+            email: "imane4@example.com",
+            emailVerified: true,
+            image: null,
+            telNumber: "0664444444",
+            role: "student",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        },
+    },
+
+    {
+        id: "student_005",
+        userId: "user_005",
+        schoolId: "school_001",
+        status: "New",
+        grade: "1",
+        classe: "D",
+        parentPhoneNumber: "0550567890",
+        parentName: "Karim Bouzid",
+        gender: "Male",
+        address: "El Kerma",
+        dateOfBirth: "2011-01-05",
+        studentPictureFileId: null,
+        user: {
+            id: "user_005",
+            name: "Rayan Bouzid",
+            email: "rayan5@example.com",
+            emailVerified: false,
+            image: null,
+            telNumber: "0665555555",
+            role: "student",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        },
+    },
+];
+
 export const adminRouter = new Hono()
-.post("/add-multiple",adminController.addMultipleTeachers)
+    .post("/add-multiple", adminController.addMultipleTeachers)
+    .get("/students", async (c) => {
+        // const data = await studentsController.listStudents(c);
+        console.log(studentsWithUserData);
+        try {
+            return c.json(studentsWithUserData, 200);
+        } catch (err) {
+            console.log(err);
+        }
+    })
+    .get("/teachers/total-teachers", adminController.TotalTeachers)
+// .get("/total-students", adminController.TotalStudents)
+
 
 
 

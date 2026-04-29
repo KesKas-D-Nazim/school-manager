@@ -36,6 +36,13 @@
       "when": 1776164707523,
       "tag": "0004_big_golden_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1777210623503,
+      "tag": "0005_public_tarantula",
+      "breakpoints": true
     }
   ]
 }

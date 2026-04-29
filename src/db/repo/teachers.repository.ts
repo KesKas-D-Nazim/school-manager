@@ -12,6 +12,7 @@ export interface ITeachersRepository {
   listTeachers(search_aueries: TeacherSearchSchema & { schoolId: string }): Promise<{ data: TeacherWithUser[]; pagination: { totalCount: number, totalPages: number } }>;
   updateTeacher(id: string, data: Partial<NewTeacher>): Promise<Teacher | undefined>;
   deleteTeacher(id: string): Promise<void>;
+  getTotalTeachers(schoolId: string): Promise<number>;
 }
 
 class TeacherRepository implements ITeachersRepository {
@@ -101,6 +102,13 @@ class TeacherRepository implements ITeachersRepository {
     await db.delete(teachersTable).where(eq(teachersTable.id, id));
   }
 
+  async getTotalTeachers(schoolId: string): Promise<number> {
+    const [row] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(teachersTable)
+      .where(eq(teachersTable.schoolId, schoolId));
+    return Number(row?.count ?? 0);
+  }
 }
 
 export const teachersRepository = new TeacherRepository(db);
