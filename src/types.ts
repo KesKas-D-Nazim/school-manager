@@ -30,7 +30,7 @@ export type Event = typeof schema.eventsTable.$inferSelect;
 export type NewEvent = Omit<typeof schema.eventsTable.$inferInsert, "id"> & { id?: string };
 
 export type Assignment = typeof schema.assignmentsTable.$inferSelect;
-export type NewAssignment = Omit<typeof schema.assignmentsTable.$inferInsert, "id"> & { id?: string };
+export type NewAssignment = typeof schema.assignmentsTable.$inferInsert;
 
 export type CourseFile = typeof schema.courseFilesTable.$inferSelect;
 export type NewCourseFile = Omit<typeof schema.courseFilesTable.$inferInsert, "id"> & { id?: string };

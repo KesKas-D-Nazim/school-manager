@@ -117,9 +117,10 @@ class AssignmentsController {
 			return c.json({ success: false, message: "Assignment not found" }, 404);
 		}
 
+		const { deadline, ...rest } = body;
 		const payload: Partial<NewAssignment> = {
-			...body,
-			...(body.deadline ? { deadline: new Date(body.deadline) } : {}),
+			...rest,
+			...(deadline ? { deadline: new Date(deadline) } : {}),
 		};
 
 		const updateAndRespond = async () => {
