@@ -6,21 +6,22 @@ import { TeacherWithUser } from "../../modules/teachers/teachers.types.js";
 import { teachersTable, users } from "../schemas.js";
 
 export interface ITeachersRepository {
-  createTeacher(data: NewTeacher): Promise<Teacher>;
+  createTeacher(data: NewTeacher): Promise<Teacher[]>;
   findTeacherById(id: string): Promise<Teacher | undefined>;
   findTeacherByUserId(userId: string): Promise<Teacher | undefined>;
   listTeachers(search_aueries: TeacherSearchSchema & { schoolId: string }): Promise<{ data: TeacherWithUser[]; pagination: { totalCount: number, totalPages: number } }>;
   updateTeacher(id: string, data: Partial<NewTeacher>): Promise<Teacher | undefined>;
-  deleteTeacher(id: string): Promise<void>;
+  deleteTeacher(id: string): Promise<Teacher | undefined>;
   getTotalTeachers(schoolId: string): Promise<number>;
 }
 
 class TeacherRepository implements ITeachersRepository {
   constructor(private readonly db: Database) { }
 
-  async createTeacher(data: NewTeacher): Promise<Teacher> {
-    const [row] = await db.insert(teachersTable).values(data).returning();
-    return row;
+  async createTeacher(data: NewTeacher): Promise<Teacher[]> {
+    const payload = { ...data, id: data.id ?? crypto.randomUUID() };
+    const rows = await db.insert(teachersTable).values(payload).returning();
+    return rows;
   }
 
   async findTeacherById(id: string) {
@@ -98,8 +99,9 @@ class TeacherRepository implements ITeachersRepository {
     return row;
   }
 
-  async deleteTeacher(id: string): Promise<void> {
-    await db.delete(teachersTable).where(eq(teachersTable.id, id));
+  async deleteTeacher(id: string): Promise<Teacher | undefined> {
+    const [row] = await db.delete(teachersTable).where(eq(teachersTable.id, id)).returning();
+    return row;
   }
 
   async getTotalTeachers(schoolId: string): Promise<number> {

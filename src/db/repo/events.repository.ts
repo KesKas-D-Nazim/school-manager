@@ -5,9 +5,10 @@ import { db } from "../db.js";
 import { eventsTable } from "../schemas.js";
 import type { Event, NewEvent } from "../../types.js";
 
-export async function createEvent(data: NewEvent): Promise<Event> {
-  const [row] = await db.insert(eventsTable).values(data).returning();
-  return row;
+export async function createEvent(data: NewEvent): Promise<Event[]> {
+  const payload = { ...data, id: data.id ?? crypto.randomUUID() };
+  const rows = await db.insert(eventsTable).values(payload).returning();
+  return rows;
 }
 
 
@@ -62,6 +63,7 @@ export async function updateEvent(
   return row;
 }
 
-export async function deleteEvent(id: string): Promise<void> {
-  await db.delete(eventsTable).where(eq(eventsTable.id, id));
+export async function deleteEvent(id: string): Promise<Event | undefined> {
+  const [row] = await db.delete(eventsTable).where(eq(eventsTable.id, id)).returning();
+  return row;
 }

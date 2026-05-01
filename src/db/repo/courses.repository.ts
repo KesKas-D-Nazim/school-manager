@@ -25,7 +25,7 @@ export type CourseWithRelations = InferSelectModel<typeof coursesTable> & {
 };
 
 export interface ICoursesRepository {
-  createCourse(data: NewCourse): Promise<Course>;
+  createCourse(data: NewCourse): Promise<Course[]>;
   findCourseById(id: string): Promise<CourseWithRelations | undefined>;
   findCourseByName(name: string, schoolId: string): Promise<CourseWithRelations | undefined>;
   listCourses(params: {
@@ -36,16 +36,16 @@ export interface ICoursesRepository {
     size?: number;
   }): Promise<{ data: CourseWithRelations[]; pagination: { totalCount: number; totalPages: number } }>;
   updateCourse(id: string, data: Partial<NewCourse>): Promise<Course | undefined>;
-  deleteCourse(id: string): Promise<void>;
+  deleteCourse(id: string): Promise<Course | undefined>;
 }
 
 class CoursesRepository implements ICoursesRepository {
   constructor(private readonly db: Database) {}
 
-  async createCourse(data: NewCourse): Promise<Course> {
+  async createCourse(data: NewCourse): Promise<Course[]> {
     const payload = { ...data, id: data.id ?? crypto.randomUUID() };
-    const [row] = await this.db.insert(coursesTable).values(payload).returning();
-    return row;
+    const rows = await this.db.insert(coursesTable).values(payload).returning();
+    return rows;
   }
 
   async findCourseById(id: string): Promise<CourseWithRelations | undefined> {
@@ -137,8 +137,9 @@ class CoursesRepository implements ICoursesRepository {
     return row;
   }
 
-  async deleteCourse(id: string): Promise<void> {
-    await this.db.delete(coursesTable).where(eq(coursesTable.id, id));
+  async deleteCourse(id: string): Promise<Course | undefined> {
+    const [row] = await this.db.delete(coursesTable).where(eq(coursesTable.id, id)).returning();
+    return row;
   }
 }
 

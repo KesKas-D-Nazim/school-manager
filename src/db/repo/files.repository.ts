@@ -4,9 +4,10 @@ import { db } from "../db.js";
 import { filesTable } from "../schemas.js";
 import type { File, NewFile } from "../../types.js";
 
-export async function createFile(data: NewFile): Promise<File> {
-  const [row] = await db.insert(filesTable).values(data).returning();
-  return row;
+export async function createFile(data: NewFile): Promise<File[]> {
+  const payload = { ...data, id: data.id ?? crypto.randomUUID() };
+  const rows = await db.insert(filesTable).values(payload).returning();
+  return rows;
 }
 
 export async function findFileById(id: string): Promise<File | undefined> {

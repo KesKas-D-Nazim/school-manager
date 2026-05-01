@@ -4,9 +4,10 @@ import { db } from "../db.js";
 import { assignmentsTable } from "../schemas.js";
 import type { Assignment, NewAssignment } from "../../types.js";
 
-export async function createAssignment(data: NewAssignment): Promise<Assignment> {
-    const [row] = await db.insert(assignmentsTable).values(data).returning();
-    return row;
+export async function createAssignment(data: NewAssignment): Promise<Assignment[]> {
+    const payload = { ...data, id: data.id ?? crypto.randomUUID() };
+    const rows = await db.insert(assignmentsTable).values(payload).returning();
+    return rows;
 }
 
 export async function findAssignmentById(

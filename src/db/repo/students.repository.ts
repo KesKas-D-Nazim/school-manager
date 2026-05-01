@@ -1,27 +1,25 @@
-import { db, type Database } from "../db.ts";
-import { studentsTable, users } from "../schemas.ts";
-import type { NewStudent, Student, StudentSearchSchema } from "../../types.ts";
+import { db, type Database } from "../db.js";
+import { studentsTable, users } from "../schemas.js";
+import type { NewStudent, Student, StudentSearchSchema } from "../../types.js";
 import { eq, inArray, like, sql } from "drizzle-orm";
-import { StudentWithUser } from "../../modules/student/students.types.ts";
+import { StudentWithUser } from "../../modules/student/students.types.js";
 
 export interface IStudentsRepository {
-  createStudent(data: NewStudent): Promise<Student>;
+  createStudent(data: NewStudent): Promise<Student[]>;
   findStudentById(id: string): Promise<StudentWithUser | undefined>;
   findStudentByUserId(userId: string): Promise<StudentWithUser | undefined>;
   listStudents(search_queries: StudentSearchSchema): Promise<{ data: StudentWithUser[]; pagination: { totalCount: number, totalPages: number } }>;
   updateStudent(id: string, data: Partial<NewStudent>): Promise<Student | undefined>;
-  deleteStudent(id: string): Promise<void>;
+  deleteStudent(id: string): Promise<Student | undefined>;
 }
 
 class StudentsRepository implements IStudentsRepository {
   constructor(private readonly db: Database) { }
 
-  async createStudent(data: NewStudent): Promise<Student> {
-    const [row] = await this.db.insert(studentsTable).values({
-      ...data,
-      id: data.id ?? crypto.randomUUID(),
-    }).returning();
-    return row;
+  async createStudent(data: NewStudent): Promise<Student[]> {
+    const payload = { ...data, id: data.id ?? crypto.randomUUID() };
+    const rows = await this.db.insert(studentsTable).values(payload).returning();
+    return rows;
   }
 
   async findStudentById(id: string) {
@@ -30,7 +28,6 @@ class StudentsRepository implements IStudentsRepository {
       with: { user: true },
     });
     return student
-    // ? undefined : StudentWithUserDto(student, student.user!)
   }
 
   async findStudentByUserId(
@@ -41,8 +38,6 @@ class StudentsRepository implements IStudentsRepository {
       with: { user: true },
     });
     return student
-    // ? undefined : StudentUserDto(student, student.user!)
-
   }
 
   async listStudents({
@@ -71,21 +66,21 @@ class StudentsRepository implements IStudentsRepository {
       : undefined;
 
     // Run both queries in parallel to save time
-    const [data] = await Promise.all([
+    const [data, totalResult] = await Promise.all([
       this.db.query.studentsTable.findMany({
         where: whereClause,
         with: { user: true },
         limit: size,
         offset,
       }),
-      // this.db
-      //   .select({ total: count() })
-      //   .from(studentsTable)
-      //   .where(whereClause),
+      this.db
+        .select({ total: sql<number>`count(*)` })
+        .from(studentsTable)
+        .where(whereClause),
     ]);
 
-    const totalCount = 0// Number(totalResult[0]?.total ?? 0);
-    const totalPages = 0// Math.ceil(totalCount / size);
+    const totalCount = Number(totalResult[0]?.total ?? 0);
+    const totalPages = Math.ceil(totalCount / size);
 
     const data_dtos = data.map(student => student)
     return { data: data_dtos, pagination: { totalCount, totalPages } };
@@ -104,8 +99,9 @@ class StudentsRepository implements IStudentsRepository {
     return student;
   }
 
-  async deleteStudent(id: string): Promise<void> {
-    await this.db.delete(studentsTable).where(eq(studentsTable.id, id));
+  async deleteStudent(id: string): Promise<Student | undefined> {
+    const [row] = await this.db.delete(studentsTable).where(eq(studentsTable.id, id)).returning();
+    return row;
   }
 
 }

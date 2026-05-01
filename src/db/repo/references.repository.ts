@@ -5,9 +5,10 @@ import { db } from "../db.js";
 import type { NewReference, Reference } from "../../types.js";
 import { referencesTable } from "../schemas.js";
 
-export async function createReference(data: NewReference): Promise<Reference> {
-    const [row] = await db.insert(referencesTable).values(data).returning();
-    return row;
+export async function createReference(data: NewReference): Promise<Reference[]> {
+    const payload = { ...data, id: data.id ?? crypto.randomUUID() };
+    const rows = await db.insert(referencesTable).values(payload).returning();
+    return rows;
 }
 
 export async function findReferenceById(

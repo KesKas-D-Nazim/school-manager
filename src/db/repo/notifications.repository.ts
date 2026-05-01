@@ -18,7 +18,7 @@ export type NotificationWithRelations = Notification & {
 };
 
 export interface INotificationsRepository {
-  createNotification(data: NewNotification): Promise<Notification>;
+  createNotification(data: NewNotification): Promise<Notification[]>;
   findNotificationById(id: string): Promise<NotificationWithRelations | undefined>;
   listNotificationsByUserId(
     userId: string,
@@ -31,16 +31,16 @@ export interface INotificationsRepository {
     classe: string,
     schoolId: string,
   ): Promise<NotificationWithRelations[]>;
-  deleteNotification(id: string): Promise<void>;
+  deleteNotification(id: string): Promise<Notification | undefined>;
 }
 
 class NotificationsRepository implements INotificationsRepository {
   constructor(private readonly db: Database) { }
 
-  async createNotification(data: NewNotification): Promise<Notification> {
+  async createNotification(data: NewNotification): Promise<Notification[]> {
     const payload = { ...data, id: data.id ?? crypto.randomUUID() };
-    const [row] = await this.db.insert(notificationsTable).values(payload).returning();
-    return row;
+    const rows = await this.db.insert(notificationsTable).values(payload).returning();
+    return rows;
   }
 
   async findNotificationById(id: string): Promise<NotificationWithRelations | undefined> {
@@ -125,8 +125,9 @@ class NotificationsRepository implements INotificationsRepository {
     }) as Promise<NotificationWithRelations[]>;
   }
 
-  async deleteNotification(id: string): Promise<void> {
-    await this.db.delete(notificationsTable).where(eq(notificationsTable.id, id));
+  async deleteNotification(id: string): Promise<Notification | undefined> {
+    const [row] = await this.db.delete(notificationsTable).where(eq(notificationsTable.id, id)).returning();
+    return row;
   }
 }
 

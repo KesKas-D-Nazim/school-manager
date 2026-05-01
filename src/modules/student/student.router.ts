@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import * as controller from "./student.controller";
-import { authMiddleware } from "../../middleware/authMiddleware";
+import { authMiddleware } from "../../middlewares/authMiddleware";
 
 const studentRouter = new Hono();
 

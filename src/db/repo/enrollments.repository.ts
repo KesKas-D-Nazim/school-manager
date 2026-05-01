@@ -4,9 +4,10 @@ import { db } from "../db.js";
 import { enrollmentsTable } from "../schemas.js";
 import type { Enrollment, NewEnrollment } from "../../types.js";
 
-export async function createEnrollment(data: NewEnrollment): Promise<Enrollment> {
-  const [row] = await db.insert(enrollmentsTable).values(data).returning();
-  return row;
+export async function createEnrollment(data: NewEnrollment): Promise<Enrollment[]> {
+  const payload = { ...data, id: data.id ?? crypto.randomUUID() };
+  const rows = await db.insert(enrollmentsTable).values(payload).returning();
+  return rows;
 }
 
 export async function findEnrollmentById(
@@ -37,6 +38,7 @@ export async function listEnrollmentsByStudentId(
   });
 }
 
-export async function deleteEnrollment(id: string): Promise<void> {
-  await db.delete(enrollmentsTable).where(eq(enrollmentsTable.id, id));
+export async function deleteEnrollment(id: string): Promise<Enrollment | undefined> {
+  const [row] = await db.delete(enrollmentsTable).where(eq(enrollmentsTable.id, id)).returning();
+  return row;
 }

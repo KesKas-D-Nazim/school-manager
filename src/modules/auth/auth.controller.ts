@@ -202,23 +202,7 @@ class AuthController {
             );
         }
     }
-    /*async getSession(c: Context) {
-        try {
-            const data = await auth.api.getSession({
-                headers: c.req.raw.headers,
-            });
-
-            const response = await authService.enrichUserWithInfo(data);
-            return c.json(response, 200);
-        } catch (error: any) {
-            return c.json(
-                {
-                    message: authService.getErrorMessage(error, "Failed to fetch session"),
-                },
-                authService.getErrorStatus(error, 401),
-            );
-        }
-    }*/
+    
 }
 
 export const authController = new AuthController();
