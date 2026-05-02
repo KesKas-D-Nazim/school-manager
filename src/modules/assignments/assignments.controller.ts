@@ -1,10 +1,10 @@
 import { Context } from "hono";
-import { assignmentsRepository, coursesRepository } from "../../db/repo/index";
-import type { NewAssignment } from "../../types";
+import { assignmentsRepository, coursesRepository } from "../../db/repo/index.js";
+import type { NewAssignment } from "../../types.js";
 import type {
 	CreateAssignmentBody,
 	UpdateAssignmentBody,
-} from "./assignments.schema";
+} from "./assignments.schema.js";
 
 type AuthUser = {
 	role?: "admin" | "teacher" | "student";

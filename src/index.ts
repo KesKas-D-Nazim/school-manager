@@ -2,18 +2,19 @@ import "dotenv/config";
 import { serve } from "@hono/node-server";
 import { Hono, ValidationTargets } from "hono";
 import { cors } from 'hono/cors'
-import authRouter from "./modules/auth/auth.router.ts";
-import { db } from "./db/db.ts";
-import { adminRouter } from "./modules/admin/admin.router.ts";
-import studentsRouter from "./modules/students/students.router.ts";
-import { teachersRouter } from "./modules/teachers/teachers.router.ts";
-import { authMiddleware } from "./middlewares/authMiddleware.ts";
-import { auth } from "./utils/auth.ts";
+import authRouter from "./modules/auth/auth.router.js";
+import { db } from "./db/db.js";
+import { adminRouter } from "./modules/admin/admin.router.js";
+import studentsRouter from "./modules/students/students.router.js";
+import { teachersRouter } from "./modules/teachers/teachers.router.js";
+import { authMiddleware } from "./middlewares/authMiddleware.js";
+import { auth } from "./utils/auth.js";
 
-import sharedRouter from "./modules/shared.router.ts";
-import { notificationsRouter } from "./modules/notifications/notifications.router.ts";
+import sharedRouter from "./modules/shared.router.js";
+import { notificationsRouter } from "./modules/notifications/notifications.router.js";
 
 const app = new Hono();
+const port = Number(process.env.PORT || 4000);
 
 app.use("*", cors());
 
@@ -23,8 +24,8 @@ app.use("*", cors());
 //   allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 //   credentials: true,
 // }))
-// app.use("/api/*", authMiddleware)
-// app.use("/auth/logout", authMiddleware)
+app.use("/api/*", authMiddleware)
+app.use("/auth/logout", authMiddleware)
 
 // app
 //   .get("/", async (c) => {
@@ -51,6 +52,9 @@ app.route("/admin", adminRouter);
 app.notFound((c) => {
   return c.json({ message: "Not Found" }, 404)
 })
+app.get("/", (c) => {
+  return c.json({ message: "Hello, World!" });
+});
 
 // this is the error handler for the app but it needs some work 
 
@@ -73,7 +77,7 @@ app.notFound((c) => {
 serve(
   {
     fetch: app.fetch,
-    port: 4000,
+    port,
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);

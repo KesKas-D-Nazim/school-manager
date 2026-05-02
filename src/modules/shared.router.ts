@@ -1,11 +1,11 @@
 import { Hono } from "hono";
-import * as studentController from './student/student.controller.ts';
-import { authMiddleware } from "../middlewares/authMiddleware";
-import * as teacherController from "./teacherInterface/teacher.controller.ts";
-import * as adminController from "./admin/admin.controller.ts"
-import { teachersController } from "./teachers/teachers.controller.ts"
-import { studentsController } from "./students/students.controller.ts"
-import { notificationsRouter } from "./notifications/notifications.router.ts"
+import * as studentController from './student/student.controller.js';
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+import * as teacherController from "./teacherInterface/teacher.controller.js";
+import * as adminController from "./admin/admin.controller.js"
+import { teachersController } from "./teachers/teachers.controller.js"
+import { studentsController } from "./students/students.controller.js"
+import { notificationsRouter } from "./notifications/notifications.router.js"
 
 
 const sharedRouter = new Hono();

@@ -1,6 +1,6 @@
 import { Context } from "hono";
-import { coursesRepository } from "../../db/repo/index.ts";
-import type { CreateCourseBody, UpdateCourseBody } from "./courses.schema.ts";
+import { coursesRepository } from "../../db/repo/index.js";
+import type { CreateCourseBody, UpdateCourseBody } from "./courses.schema.js";
 
 type AuthUser = {
 	role?: "admin" | "teacher" | "student";

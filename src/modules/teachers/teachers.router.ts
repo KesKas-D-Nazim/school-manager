@@ -1,11 +1,11 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { teachersController } from "./teachers.controller";
+import { teachersController } from "./teachers.controller.js";
 import {
 	createTeacherSchema,
 	TeacherSearchSchema,
 	updateTeacherSchema,
-} from "./teachers.schema";
+} from "./teachers.schema.js";
 
 export const teachersRouter = new Hono()
 	.get("/", zValidator("query", TeacherSearchSchema), teachersController.listTeachers)

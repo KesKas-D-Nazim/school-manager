@@ -1,5 +1,5 @@
-import { db } from "../../db/db";
-import { coursesTable, notificationsTable, studentsTable, enrollmentsTable, teachersTable, users, eventsTable } from "../../db/schemas";
+import { db } from "../../db/db.js";
+import { coursesTable, notificationsTable, studentsTable, enrollmentsTable, teachersTable, users, eventsTable } from "../../db/schemas.js";
 import { eq, and, or, gte, lte } from "drizzle-orm";
 
 export const getCourses = async (c: any) => {

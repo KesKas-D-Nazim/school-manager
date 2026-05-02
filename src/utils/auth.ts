@@ -2,9 +2,9 @@ import { betterAuth } from "better-auth";
 import { openAPI } from "better-auth/plugins";
 import { bearer } from "better-auth/plugins/bearer";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "../db/db";
-import { sendVerificationEmail } from "../emails/sendEmail";
-import { handlePassword } from "./hash_password";
+import { db } from "../db/db.js";
+import { sendVerificationEmail } from "../emails/sendEmail.js";
+import { handlePassword } from "./hash_password.js";
 
 const baseURL = process.env.BETTER_AUTH_URL || "http://localhost:8888";
 const basePath = "/api/better-auth";

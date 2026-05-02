@@ -1,6 +1,6 @@
 
 import { Resend } from "resend";
-import { EmailVerificationTemplate } from "./email-verification.tsx";
+import { EmailVerificationTemplate } from "./email-verification.js";
 import React, { createElement } from "react";
 
 export const sendVerificationEmail = async (

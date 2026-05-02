@@ -1,6 +1,6 @@
 
-import { db } from "../../db/db.ts";
-import { adminsTable, session } from "../../db/schemas.ts";
+import { db } from "../../db/db.js";
+import { adminsTable, session } from "../../db/schemas.js";
 import {  eq } from "drizzle-orm";
 import { randomBytes, randomUUID } from "node:crypto";
 import { sign } from "hono/jwt";

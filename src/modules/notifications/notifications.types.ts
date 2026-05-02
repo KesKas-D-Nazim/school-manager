@@ -4,7 +4,7 @@ import {
   notificationFilesTable,
   notificationsTable,
   users,
-} from "../../db/schemas";
+} from "../../db/schemas.js";
 
 export type NotificationWithRelations = InferSelectModel<typeof notificationsTable> & {
   files: Array<InferSelectModel<typeof notificationFilesTable> & {

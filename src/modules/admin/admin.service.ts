@@ -1,8 +1,8 @@
 import * as XLSX from "xlsx";
-import { db } from "../../db/db";
-import { teacherExcelColumns, studentExcelColumns } from "./types"
-import { users, account, teachersTable, studentsTable } from "../../db/schemas"
-import { handlePassword } from "../../utils/hash_password"
+import { db } from "../../db/db.js";
+import { teacherExcelColumns, studentExcelColumns } from "./types.js"
+import { users, account, teachersTable, studentsTable } from "../../db/schemas.js"
+import { handlePassword } from "../../utils/hash_password.js"
 
 type isMatchesResult = {
     isMatches: boolean;

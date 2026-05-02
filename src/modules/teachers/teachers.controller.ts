@@ -1,10 +1,10 @@
 import { eq } from "drizzle-orm";
 import { Context } from "hono";
-import { db } from "../../db/db.ts";
-import { teachersRepository } from "../../db/repo/index.ts";
-import { users } from "../../db/schemas.ts";
-import { auth } from "../../utils/auth.ts";
-import type { CreateTeacherBody, UpdateTeacherBody } from "./teachers.schema.ts";
+import { db } from "../../db/db.js";
+import { teachersRepository } from "../../db/repo/index.js";
+import { users } from "../../db/schemas.js";
+import { auth } from "../../utils/auth.js";
+import type { CreateTeacherBody, UpdateTeacherBody } from "./teachers.schema.js";
 
 type AuthUser = {
 	role?: "admin" | "teacher" | "student";

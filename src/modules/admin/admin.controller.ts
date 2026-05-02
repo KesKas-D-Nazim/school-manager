@@ -1,11 +1,11 @@
 import { Context } from "hono";
-import { ITeachersRepository, teachersRepository } from "../../db/repo/index.ts";
-import { addMultipleSchemaBody } from "./admin.schemas.ts";
-import { db } from "../../db/db.ts";
+import { ITeachersRepository, teachersRepository } from "../../db/repo/index.js";
+import { addMultipleSchemaBody } from "./admin.schemas.js";
+import { db } from "../../db/db.js";
 import { eq, and, gte, lte } from "drizzle-orm";
-import { TeacherSearchSchema } from "../../types.ts";
-import { adminService } from "./admin.service.ts";
-import { eventsTable, teachersTable, users } from "../../db/schemas.ts";
+import { TeacherSearchSchema } from "../../types.js";
+import { adminService } from "./admin.service.js";
+import { eventsTable, teachersTable, users } from "../../db/schemas.js";
 
 
 export const getEvents = async (c: any) => {

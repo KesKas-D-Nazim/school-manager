@@ -8,7 +8,7 @@ import {
 	referencesTable,
 	teachersTable,
 	users,
-} from "../../db/schemas";
+} from "../../db/schemas.js";
 
 export type CourseWithRelations = InferSelectModel<typeof coursesTable> & {
 	teacher:

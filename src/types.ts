@@ -1,5 +1,5 @@
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import * as schema from "../src/db/schemas"
+import * as schema from "../src/db/schemas.js"
 
 import z from "zod";
 

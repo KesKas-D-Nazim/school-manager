@@ -1,7 +1,7 @@
 
 import { Context } from "hono";
 import { verify } from "hono/jwt";
-import { authService } from "../modules/auth/auth.service.ts";
+import { authService } from "../modules/auth/auth.service.js";
 
 
 export const authMiddleware = async (c : Context, next: () => Promise<void>) => {

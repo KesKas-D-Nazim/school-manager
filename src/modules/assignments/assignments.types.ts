@@ -5,7 +5,7 @@ import {
 	assignmentsTable,
 	coursesTable,
 	filesTable,
-} from "../../db/schemas";
+} from "../../db/schemas.js";
 
 export type AssignmentWithRelations = InferSelectModel<typeof assignmentsTable> & {
 	files: (InferSelectModel<typeof assignmentFilesTable> & {

@@ -1,8 +1,8 @@
 import { Context } from "hono";
-import { notificationsRepository } from "../../db/repo/index.ts";
-import type { CreateNotificationBody } from "./notifications.schema.ts";
-import { db } from "../../db/db.ts";
-import { notificationsTable } from "../../db/schemas.ts";
+import { notificationsRepository } from "../../db/repo/index.js";
+import type { CreateNotificationBody } from "./notifications.schema.js";
+import { db } from "../../db/db.js";
+import { notificationsTable } from "../../db/schemas.js";
 import { eq } from "drizzle-orm";
 
 type AuthUser = {

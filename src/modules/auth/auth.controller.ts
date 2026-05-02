@@ -1,8 +1,8 @@
 
 import { Context } from "hono";
-import { auth } from "../../utils/auth.ts";
-import type { LoginBody, RegisterBody } from "./auth.schema";
-import { authService } from "./auth.service.ts";
+import { auth } from "../../utils/auth.js";
+import type { LoginBody, RegisterBody } from "./auth.schema.js";
+import { authService } from "./auth.service.js";
 import { deleteCookie, getCookie } from "hono/cookie";
 
 class AuthController {

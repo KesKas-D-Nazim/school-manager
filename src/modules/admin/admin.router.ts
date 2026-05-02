@@ -1,13 +1,13 @@
 import { Hono } from "hono"
-import { adminController } from "./admin.controller.ts"
-// import { studentSearchSchema, teacherSearchSchema } from "../../types.ts"
+import { adminController } from "./admin.controller.js"
+// import { studentSearchSchema, teacherSearchSchema } from "../../types.js"
 import { zValidator } from "@hono/zod-validator"
-// import { studentsController } from "../students/students.controller.ts"
-import { paginatedSuccessResponse, successResponse } from "../../utils/response.type.ts"
-import { zvalidateWithThrow } from "../../utils/middlewares/zvalidate_with_throw.middleware.ts"
+// import { studentsController } from "../students/students.controller.js"
+import { paginatedSuccessResponse, successResponse } from "../../utils/response.type.js"
+import { zvalidateWithThrow } from "../../utils/middlewares/zvalidate_with_throw.middleware.js"
 import z from "zod"
-import { studentsController } from "../students/students.controller.ts"
-import { StudentWithUser } from "../students/students.types.ts"
+import { studentsController } from "../students/students.controller.js"
+import { StudentWithUser } from "../students/students.types.js"
 
 // export const adminRouter = new Hono()
 //     .get(

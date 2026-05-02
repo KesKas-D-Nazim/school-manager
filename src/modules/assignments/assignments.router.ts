@@ -1,10 +1,10 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import { assignmentsController } from "./assignments.controller";
+import { assignmentsController } from "./assignments.controller.js";
 import {
 	createAssignmentSchema,
 	updateAssignmentSchema,
-} from "./assignments.schema";
+} from "./assignments.schema.js";
 
 export const assignmentsRouter = new Hono()
 	.get("/", assignmentsController.listAssignments)
