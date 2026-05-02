@@ -33,7 +33,7 @@ app.use("/auth/logout", authMiddleware)
 
 //   });
 
-// app.route("/auth", authRouter);
+app.route("/auth", authRouter);
 
 // app.on(["POST", "GET"], "/better-auth/**", async (c) => {
 //   return auth.handler(c.req.raw);

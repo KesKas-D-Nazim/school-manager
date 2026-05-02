@@ -1,4 +1,4 @@
-@baseUrl = https://school-manager-t4cs.onrender.com
+@baseUrl =https://school-manager-t49x.onrender.com
 
 ### Register User
 POST {{baseUrl}}/auth/register
